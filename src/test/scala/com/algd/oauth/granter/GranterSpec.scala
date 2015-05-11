@@ -5,8 +5,9 @@ import com.algd.oauth.data.ValidationManager
 import com.algd.oauth.data.model.{AuthorizationData, TokenResponse, Client, User}
 import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.exception.OAuthError._
+import com.algd.oauth.utils.OAuthParams
 import org.scalatest.FunSuite
-import com.algd.oauth.utils.OAuthParam._
+import com.algd.oauth.utils.OAuthParams._
 import scala.concurrent.{Future, Await}
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
@@ -16,6 +17,7 @@ class GranterSpec extends FunSuite {
   import scala.concurrent.ExecutionContext.Implicits.global
   case class TestUser(id: String, scope: Set[String]) extends User
   implicit val dataManager = new ValidationManager[TestUser] {}
+  implicit val oauthParams = new OAuthParams()
   dataManager.clients +=
     "ccclient" -> ("client_secret", Client("Test Client", "ccclient", Set("test"), Set(GrantType.CLIENT_CREDENTIALS), List()))
   dataManager.clients +=

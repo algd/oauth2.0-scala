@@ -2,15 +2,16 @@ package com.algd.oauth.granter
 
 import com.algd.oauth.data.ValidationManager
 import com.algd.oauth.data.model.{TokenResponse, Client, User}
+import com.algd.oauth.utils.OAuthParams
 
 import scala.concurrent.{Future, ExecutionContext}
 
 class PasswordGranter[T <: User] extends GenericGranter[T] {
-  def process(client: Client, params: Map[String, String])
-      (implicit vm: ValidationManager[T], ec: ExecutionContext) : Future[TokenResponse] = {
-    getUser(params) { (username, password) =>
+  def process(client: Client)
+      (implicit vm: ValidationManager[T], params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
+    params.getUser { (username, password) =>
       vm.validateUser(username, password).flatMap { user =>
-        vm.createAccessToken(client, Some(user), getScope(params))
+        vm.createAccessToken(client, Some(user), params.getScope)
       }
     }
   }
