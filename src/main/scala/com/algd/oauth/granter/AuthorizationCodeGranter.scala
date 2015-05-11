@@ -8,7 +8,9 @@ import com.algd.oauth.utils.OAuthParams
 
 import scala.concurrent.{Future, ExecutionContext}
 
-class AuthorizationCodeGranter[T <: User] extends GenericGranter[T] {
+class AuthorizationCodeGranter[T <: User] extends Granter[T] {
+  val name = GrantType.AUTHORIZATION_CODE
+
   def process(client: Client)
       (implicit validationManager: ValidationManager[T], params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
     params.getCode { code =>

@@ -6,7 +6,9 @@ import com.algd.oauth.utils.OAuthParams
 
 import scala.concurrent.{Future, ExecutionContext}
 
-class RefreshTokenGranter[T <: User] extends GenericGranter[T] {
+class RefreshTokenGranter[T <: User] extends Granter[T] {
+  val name = GrantType.REFRESH_TOKEN
+
   def process(client: Client)
       (implicit vm: ValidationManager[T], params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
     params.getRefreshToken { token =>

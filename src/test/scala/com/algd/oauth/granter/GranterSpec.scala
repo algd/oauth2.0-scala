@@ -28,10 +28,11 @@ class GranterSpec extends FunSuite {
     "rtclient" -> ("client_secret", Client("Test Client", "rtclient", Set("test", "test3"), Set(GrantType.REFRESH_TOKEN), List("http://redirect.com")))
   dataManager.users += ("marissa" -> ("koala", TestUser("marissa", Set("test", "test2", "test3"))))
 
-  val ccGranter = new ClientCredentialsGranter[TestUser]
-  val acGranter = new AuthorizationCodeGranter[TestUser]
-  val pGranter = new PasswordGranter[TestUser]
-  val rtGranter = new RefreshTokenGranter[TestUser]
+  val baseGranter = new BaseGranter[TestUser]()
+  val ccGranter = baseGranter + new ClientCredentialsGranter[TestUser]
+  val acGranter = baseGranter + new AuthorizationCodeGranter[TestUser]
+  val pGranter = baseGranter + new PasswordGranter[TestUser]
+  val rtGranter = baseGranter + new RefreshTokenGranter[TestUser]
 
   def expectCondition[T:ClassTag](title: String)(f: => Future[Any])(cond: T => Boolean): Unit = test(title) {
     val res = Await.result(f.recover{ case e:Throwable => e }, 3.seconds)
