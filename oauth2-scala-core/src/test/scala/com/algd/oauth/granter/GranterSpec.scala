@@ -1,7 +1,6 @@
 package com.algd.oauth.granter
 
-import akka.http.util.DateTime
-import com.algd.oauth.data.ValidationManager
+import com.algd.oauth.data.{TestUser, MyValidationManager}
 import com.algd.oauth.data.model.{AuthorizationData, TokenResponse, Client, User}
 import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.exception.OAuthError._
@@ -12,11 +11,11 @@ import scala.concurrent.{Future, Await}
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 import scala.reflect.classTag
+import org.joda.time.DateTime
 
 class GranterSpec extends FunSuite {
   import scala.concurrent.ExecutionContext.Implicits.global
-  case class TestUser(id: String, scope: Set[String]) extends User
-  implicit val dataManager = new ValidationManager[TestUser] {}
+  implicit val dataManager = new MyValidationManager
   implicit val oauthParams = new OAuthParams()
   dataManager.clients +=
     "ccclient" -> ("client_secret", Client("Test Client", "ccclient", Set("test"), Set(GrantType.CLIENT_CREDENTIALS), List()))
@@ -253,7 +252,7 @@ class GranterSpec extends FunSuite {
       dataManager.clients("rtclient")._2,
       dataManager.users("marissa")._2,
       Some(Set("test")),
-      creationDate = DateTime.now - 40000000))
+      creationDate = DateTime.now.minusSeconds(40000)))
     rtGranter(Map(CLIENT_ID -> "rtclient",
       CLIENT_SECRET -> "client_secret",
       GRANT_TYPE -> GrantType.REFRESH_TOKEN,

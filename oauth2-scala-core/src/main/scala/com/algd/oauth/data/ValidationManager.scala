@@ -1,95 +1,53 @@
 package com.algd.oauth.data
 
-import akka.http.util.DateTime
 import com.algd.oauth.data.model._
 import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.exception.OAuthError._
 import com.algd.oauth.utils.OAuthParams
+import org.joda.time.DateTime
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 trait ValidationManager[T <:  User] {
-  import scala.concurrent.ExecutionContext.Implicits.global
-  val clients: scala.collection.mutable.Map[String, (String, Client)] = scala.collection.mutable.Map(
-    "client" -> ("client_secret", Client("Test Client", "client", Set("test"), Set("authorization_code"), List()))
-  )
-  val users: scala.collection.mutable.Map[String, (String, T)] = scala.collection.mutable.Map()
-  val authCodes: scala.collection.mutable.Map[String, AuthorizationData[T]] = scala.collection.mutable.Map()
-  val tokenDatas: scala.collection.mutable.Map[String, AuthorizationData[T]] = scala.collection.mutable.Map()
-  val refTokenDatas: scala.collection.mutable.Map[String, AuthorizationData[T]] = scala.collection.mutable.Map()
-
-  ///////////////////////////////////////////////
 
   def getClient(id: String)
-      (implicit params: OAuthParams): Future[Option[Client]] = {
-    Future.successful(clients.get(id).map(_._2))
-  }
+      (implicit params: OAuthParams): Future[Option[Client]]
 
   def getClient(id: String, secret: String)
-      (implicit params: OAuthParams): Future[Option[Client]] = {
-    Future.successful(clients.get(id).find(_._1 == secret).map(_._2))
-  }
+      (implicit params: OAuthParams): Future[Option[Client]]
 
   def getUser(username: String, password: String)
-      (implicit params: OAuthParams): Future[Option[T]] = {
-    Future.successful(users.get(username).find(_._1 == password).map(_._2))
-  }
+      (implicit params: OAuthParams): Future[Option[T]]
 
   def getAuthCodeData(code: String)
-      (implicit params: OAuthParams): Future[Option[AuthorizationData[T]]] = {
-    Future.successful(authCodes.get(code))
-  }
+      (implicit params: OAuthParams): Future[Option[AuthorizationData[T]]]
 
   def removeAuthCodeData(code: String)
-      (implicit params: OAuthParams): Future[Option[String]] = {
-    Future.successful(authCodes.remove(code).map(_ => code))
-  }
+      (implicit params: OAuthParams): Future[Option[String]]
 
   def getRefreshTokenData(refreshToken: String)
-      (implicit params: OAuthParams): Future[Option[AuthorizationData[T]]] = {
-    Future.successful(refTokenDatas.get(refreshToken))
-  }
+      (implicit params: OAuthParams): Future[Option[AuthorizationData[T]]]
 
   def removeRefreshTokenData(refreshToken: String)
-      (implicit params: OAuthParams): Future[Option[String]] = {
-    Future.successful(refTokenDatas.remove(refreshToken).map(_ => refreshToken))
-  }
+      (implicit params: OAuthParams): Future[Option[String]]
 
   def getAccessTokenData(token: String)
-      (implicit params: OAuthParams) : Future[Option[AuthorizationData[T]]] = {
-    Future.successful(tokenDatas.get(token))
-  }
+      (implicit params: OAuthParams) : Future[Option[AuthorizationData[T]]]
 
   def removeAccessTokenData(token: String)
-      (implicit params: OAuthParams): Future[Option[String]] = {
-    Future.successful(tokenDatas.remove(token).map(_ => token))
-  }
+      (implicit params: OAuthParams): Future[Option[String]]
 
   def isValidRedirectUri(uri: String, clientUris: List[String])
-      (implicit params: OAuthParams): Boolean = {
-    clientUris.exists(clientUri => uri.startsWith(clientUri))
-  }
+      (implicit params: OAuthParams): Boolean
 
   def generateAccessToken(client: Client, user: Option[T], scope: Set[String])
-      (implicit params: OAuthParams) : Future[String] = {
-    val token = java.util.UUID.randomUUID().toString
-    //tokenDatas += token -> AuthorizationData[T](client, user.orNull[T], Some(scope))
-    Future.successful(token)
-  }
+      (implicit params: OAuthParams) : Future[String]
 
   def generateRefreshToken(client: Client, user: Option[T], scope: Set[String])
-      (implicit params: OAuthParams) : Future[String] = {
-    val token = java.util.UUID.randomUUID().toString
-    //refTokenDatas += token -> AuthorizationData[T](client, user.get, Some(scope))
-    Future.successful(token)
-  }
+      (implicit params: OAuthParams) : Future[String]
 
   def generateAuthCode(client: Client, user: T, scope: Option[Set[String]], redirectUri: Option[String])
-      (implicit params: OAuthParams) : Future[String] = {
-    val code = java.util.UUID.randomUUID.toString.substring(0, 4).toUpperCase
-    authCodes += code -> AuthorizationData[T](client, user, scope, redirectUri)
-    Future.successful(code)
-  }
+      (implicit params: OAuthParams) : Future[String]
 
   // TODO: MyImpl
   // TODO: MyImpl
@@ -97,11 +55,11 @@ trait ValidationManager[T <:  User] {
 
 
   def validateRefreshToken(token: String, clientId: String)
-      (implicit params: OAuthParams) : Future[AuthorizationData[T]] = {
+      (implicit params: OAuthParams, ec: ExecutionContext) : Future[AuthorizationData[T]] = {
     for {
       tokenData <- getRefreshTokenData(token)
       nonExpiredData <- tokenData match {
-        case Some(data) if data.creationDate + 36000000 < DateTime.now =>
+        case Some(data) if data.creationDate.plusSeconds(36000).isBefore(DateTime.now) =>
           removeRefreshTokenData(token).map(_ => None)
         case other => Future.successful(other.find(_.client.id == clientId))
       }
@@ -110,11 +68,11 @@ trait ValidationManager[T <:  User] {
   }
   
   def validateAccessToken(token: String)
-      (implicit params: OAuthParams) : Future[AuthorizationData[T]] = {
+      (implicit params: OAuthParams, ec: ExecutionContext) : Future[AuthorizationData[T]] = {
     for {
       tokenData <- getAccessTokenData(token)
       nonExpiredData <- tokenData match {
-        case Some(data) if data.creationDate + 3600000 < DateTime.now =>
+        case Some(data) if data.creationDate.plusSeconds(3600).isBefore(DateTime.now) =>
           removeAccessTokenData(token).map(_ => None)
         case other => Future.successful(other)
       }
@@ -123,7 +81,7 @@ trait ValidationManager[T <:  User] {
   }
 
   def validateCode(code: String, clientId: String, redirectUri: Option[String])
-      (implicit params: OAuthParams): Future[AuthorizationData[T]] = {
+      (implicit params: OAuthParams, ec: ExecutionContext): Future[AuthorizationData[T]] = {
     for {
       tokenData <- getAuthCodeData(code)
       nonExpiredData <- removeAuthCodeData(code) // Always remove
@@ -146,7 +104,7 @@ trait ValidationManager[T <:  User] {
 
   def createAccessToken(client: Client, user: Option[T], givenScope: Option[Set[String]],
     allowRefresh: Boolean = true, refreshing : Boolean = false)
-      (implicit params: OAuthParams) : Future[TokenResponse] = {
+      (implicit params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
 
     val userClientScope = user.map(_.scope & client.scope).getOrElse(client.scope)
     val scope = givenScope.map(_ & userClientScope).getOrElse(userClientScope)
@@ -163,7 +121,7 @@ trait ValidationManager[T <:  User] {
   }
 
   def createAuthCode(client: Client, user: T, givenScope: Option[Set[String]], givenUri: Option[String])
-      (implicit params: OAuthParams): Future[CodeResponse] = {
+      (implicit params: OAuthParams, ec: ExecutionContext): Future[CodeResponse] = {
     val userClientScope = user.scope & client.scope
     val scope = givenScope.map(_ & userClientScope).getOrElse(userClientScope)
     if (scope.isEmpty)
@@ -179,7 +137,7 @@ trait ValidationManager[T <:  User] {
   }
 
   def validateClient(id: String, secret: String, grantType: String)
-      (implicit params: OAuthParams): Future[Client] = {
+      (implicit params: OAuthParams, ec: ExecutionContext): Future[Client] = {
     getClient(id, secret).map {
       case Some(client) if client.allowedGrants.contains(grantType) => client
       case Some(_) => throw OAuthError(UNAUTHORIZED_CLIENT, ErrorDescription(1))
@@ -188,7 +146,7 @@ trait ValidationManager[T <:  User] {
   }
 
   def validateClient(id: String, grantType: String)
-      (implicit params: OAuthParams): Future[Client] = {
+      (implicit params: OAuthParams, ec: ExecutionContext): Future[Client] = {
     getClient(id).map {
       case Some(client) if client.allowedGrants.contains(grantType) => client
       case Some(_) => throw OAuthError(UNAUTHORIZED_CLIENT, ErrorDescription(1))
@@ -197,7 +155,7 @@ trait ValidationManager[T <:  User] {
   }
 
   def validateUser(username: String, password: String)
-      (implicit params: OAuthParams): Future[T] = {
+      (implicit params: OAuthParams, ec: ExecutionContext): Future[T] = {
     getUser(username, password).map{
       _.getOrElse(throw OAuthError(INVALID_GRANT))
     }

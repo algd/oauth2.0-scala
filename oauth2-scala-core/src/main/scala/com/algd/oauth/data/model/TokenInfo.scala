@@ -1,6 +1,6 @@
 package com.algd.oauth.data.model
 
-import akka.http.util.DateTime
+import org.joda.time.DateTime
 
 case class Client(
   name: String,
@@ -31,5 +31,5 @@ case class AuthorizationData[T <:  User](
   givenScope: Option[Set[String]] = None,
   givenRedirectUri: Option[String] = None,
   creationDate: DateTime = DateTime.now) {
-  def isExpired : Boolean = creationDate.+(300*1000).>(DateTime.now)
+  def isExpired : Boolean = creationDate.plusSeconds(300).isBefore(DateTime.now)
 }
