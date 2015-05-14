@@ -27,7 +27,7 @@ case class CodeResponse(
 
 case class AuthorizationData[T <:  User](
   client: Client,
-  user: T,
+  user: Option[T],
   givenScope: Option[Set[String]] = None,
   givenRedirectUri: Option[String] = None,
   creationDate: DateTime = DateTime.now) {

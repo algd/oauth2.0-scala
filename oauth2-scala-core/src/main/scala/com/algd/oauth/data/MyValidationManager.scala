@@ -68,24 +68,29 @@ class MyValidationManager extends ValidationManager[TestUser] {
     clientUris.exists(clientUri => uri.startsWith(clientUri))
   }
 
-  def generateAccessToken(client: Client, user: Option[TestUser], scope: Set[String])
+  def generateAccessToken(authInfo: AuthorizationData[TestUser])
       (implicit params: OAuthParams) : Future[String] = {
     val token = java.util.UUID.randomUUID().toString
     //tokenDatas += token -> AuthorizationData[TestUser](client, user.orNull[TestUser], Some(scope))
     Future.successful(token)
   }
 
-  def generateRefreshToken(client: Client, user: Option[TestUser], scope: Set[String])
+  def generateRefreshToken(authInfo: AuthorizationData[TestUser])
       (implicit params: OAuthParams) : Future[String] = {
     val token = java.util.UUID.randomUUID().toString
     //refTokenDatas += token -> AuthorizationData[TestUser](client, user.get, Some(scope))
     Future.successful(token)
   }
 
-  def generateAuthCode(client: Client, user: TestUser, scope: Option[Set[String]], redirectUri: Option[String])
+  def generateAuthCode(authInfo: AuthorizationData[TestUser])
       (implicit params: OAuthParams) : Future[String] = {
     val code = java.util.UUID.randomUUID.toString.substring(0, 4).toUpperCase
-    authCodes += code -> AuthorizationData[TestUser](client, user, scope, redirectUri)
+    authCodes += code -> authInfo
     Future.successful(code)
+  }
+
+  def buildAuthorizationData(client: Client, user: Option[TestUser], scope: Option[Set[String]], redirectUri: Option[String])
+      (implicit params: OAuthParams): Future[AuthorizationData[TestUser]] = {
+    Future.successful(AuthorizationData(client, user, scope, redirectUri))
   }
 }

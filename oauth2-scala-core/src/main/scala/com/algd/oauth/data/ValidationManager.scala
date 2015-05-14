@@ -40,14 +40,17 @@ trait ValidationManager[T <:  User] {
   def isValidRedirectUri(uri: String, clientUris: List[String])
       (implicit params: OAuthParams): Boolean
 
-  def generateAccessToken(client: Client, user: Option[T], scope: Set[String])
+  def generateAccessToken(authInfo: AuthorizationData[T])
       (implicit params: OAuthParams) : Future[String]
 
-  def generateRefreshToken(client: Client, user: Option[T], scope: Set[String])
+  def generateRefreshToken(authInfo: AuthorizationData[T])
       (implicit params: OAuthParams) : Future[String]
 
-  def generateAuthCode(client: Client, user: T, scope: Option[Set[String]], redirectUri: Option[String])
+  def generateAuthCode(authInfo: AuthorizationData[T])
       (implicit params: OAuthParams) : Future[String]
+
+  def buildAuthorizationData(client: Client, user: Option[T], scope: Option[Set[String]], redirectUri: Option[String] = None)
+      (implicit params: OAuthParams) : Future[AuthorizationData[T]]
 
   // TODO: MyImpl
   // TODO: MyImpl
@@ -94,14 +97,6 @@ trait ValidationManager[T <:  User] {
     }
   }
 
-  /*def validateRefreshToken(refreshToken: String, clientId: String): Future[AuthorizationData[T]] = {
-    getRefreshTokenData(refreshToken).map { optData =>
-      optData.find(data => data.client.id == clientId && !data.isExpired)
-        .getOrElse(throw new Exception("INVALID_GRANT invalid refresh_token"))
-    }
-  }*/
-
-
   def createAccessToken(client: Client, user: Option[T], givenScope: Option[Set[String]],
     allowRefresh: Boolean = true, refreshing : Boolean = false)
       (implicit params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
@@ -111,8 +106,9 @@ trait ValidationManager[T <:  User] {
     if (scope.isEmpty)
       Future.failed(OAuthError(INVALID_SCOPE, Some("allowed scopes: " + userClientScope)))
     else for {
-      token <- generateAccessToken(client, user, scope)
-      refreshToken <- if (allowRefresh) generateRefreshToken(client, user, scope).map(Some(_))
+      authInfo <- buildAuthorizationData(client, user, givenScope)
+      token <- generateAccessToken(authInfo)
+      refreshToken <- if (allowRefresh) generateRefreshToken(authInfo).map(Some(_))
       else Future.successful(None)
     } yield TokenResponse(
         scope = scope,
@@ -127,7 +123,8 @@ trait ValidationManager[T <:  User] {
     if (scope.isEmpty)
       Future.failed(OAuthError(INVALID_SCOPE, Some("allowed scopes: " + userClientScope)))
     else for {
-      code <- generateAuthCode(client, user, givenScope, givenUri)
+      authInfo <- buildAuthorizationData(client, Some(user), givenScope, givenUri)
+      code <- generateAuthCode(authInfo)
     } yield CodeResponse(
         scope = scope,
         code = code,

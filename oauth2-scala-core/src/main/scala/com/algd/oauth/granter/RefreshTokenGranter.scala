@@ -13,7 +13,7 @@ class RefreshTokenGranter[T <: User] extends Granter[T] {
       (implicit vm: ValidationManager[T], params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
     params.getRefreshToken { token =>
       vm.validateRefreshToken(token, client.id).flatMap { res =>
-        vm.createAccessToken(res.client, Some(res.user), res.givenScope)
+        vm.createAccessToken(res.client, res.user, res.givenScope)
       }
     }
   }

@@ -17,7 +17,7 @@ class AuthorizationCodeGranter[T <: User] extends Granter[T] {
       validationManager.validateCode(code, client.id, params.getRedirectUri).flatMap { res =>
         if (params.getScope.exists(x => Some(x) != res.givenScope))
           throw OAuthError(INVALID_SCOPE, ErrorDescription(21))
-        else validationManager.createAccessToken(res.client, Some(res.user), res.givenScope)
+        else validationManager.createAccessToken(res.client, res.user, res.givenScope)
       }
     }
   }
