@@ -88,9 +88,4 @@ class MyValidationManager extends ValidationManager[TestUser] {
     authCodes += code -> authInfo
     Future.successful(code)
   }
-
-  def buildAuthorizationData(client: Client, user: Option[TestUser], scope: Option[Set[String]], redirectUri: Option[String])
-      (implicit params: OAuthParams): Future[AuthorizationData[TestUser]] = {
-    Future.successful(AuthorizationData(client, user, scope, redirectUri))
-  }
 }

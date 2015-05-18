@@ -15,9 +15,9 @@ class AuthorizationCodeGranter[T <: User] extends Granter[T] {
       (implicit validationManager: ValidationManager[T], params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
     params.getCode { code =>
       validationManager.validateCode(code, client.id, params.getRedirectUri).flatMap { res =>
-        if (params.getScope.exists(x => Some(x) != res.givenScope))
+        if (params.getScope.exists(x => Some(x) != res.scope))
           throw OAuthError(INVALID_SCOPE, ErrorDescription(21))
-        else validationManager.createAccessToken(res.client, res.user, res.givenScope)
+        else validationManager.createAccessToken(res.client, res.user, res.scope)
       }
     }
   }

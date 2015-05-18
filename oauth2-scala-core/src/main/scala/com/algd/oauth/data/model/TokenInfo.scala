@@ -28,8 +28,10 @@ case class CodeResponse(
 case class AuthorizationData[T <:  User](
   client: Client,
   user: Option[T],
-  givenScope: Option[Set[String]] = None,
+  scope: Option[Set[String]] = None,
   givenRedirectUri: Option[String] = None,
+  data: Map[String, String] = Map.empty,
   creationDate: DateTime = DateTime.now) {
   def isExpired : Boolean = creationDate.plusSeconds(300).isBefore(DateTime.now)
+  def withData(data: (String, String)*) = copy(data = data.toMap)
 }

@@ -50,7 +50,16 @@ trait ValidationManager[T <:  User] {
       (implicit params: OAuthParams) : Future[String]
 
   def buildAuthorizationData(client: Client, user: Option[T], scope: Option[Set[String]], redirectUri: Option[String] = None)
-      (implicit params: OAuthParams) : Future[AuthorizationData[T]]
+      (implicit params: OAuthParams) : Future[AuthorizationData[T]] = Future.successful {
+    AuthorizationData(client, user, scope, redirectUri)
+  }
+
+  def getGrantedScope(clientScope: Set[String],
+    userScope: Option[Set[String]],
+    requestedScope: Option[Set[String]])(
+    implicit params: OAuthParams): Future[Set[String]] = Future.successful{
+    Seq(Some(clientScope), userScope, requestedScope).flatten.reduce(_&_)
+  }
 
   // TODO: MyImpl
   // TODO: MyImpl
@@ -100,37 +109,34 @@ trait ValidationManager[T <:  User] {
   def createAccessToken(client: Client, user: Option[T], givenScope: Option[Set[String]],
     allowRefresh: Boolean = true, refreshing : Boolean = false)
       (implicit params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
-
-    val userClientScope = user.map(_.scope & client.scope).getOrElse(client.scope)
-    val scope = givenScope.map(_ & userClientScope).getOrElse(userClientScope)
-    if (scope.isEmpty)
-      Future.failed(OAuthError(INVALID_SCOPE, Some("allowed scopes: " + userClientScope)))
-    else for {
-      authInfo <- buildAuthorizationData(client, user, givenScope)
+    for {
+      scope <- getGrantedScope(client.scope, user.map(_.scope), givenScope).map{s =>
+        if (s.isEmpty) throw OAuthError(INVALID_SCOPE)
+        else s }
+      authInfo <- buildAuthorizationData(client, user, Some(scope)) //use final scope
       token <- generateAccessToken(authInfo)
       refreshToken <- if (allowRefresh) generateRefreshToken(authInfo).map(Some(_))
       else Future.successful(None)
     } yield TokenResponse(
-        scope = scope,
-        accessToken = token,
-        refreshToken = refreshToken)
+      scope = scope,
+      accessToken = token,
+      refreshToken = refreshToken)
   }
 
   def createAuthCode(client: Client, user: T, givenScope: Option[Set[String]], givenUri: Option[String])
       (implicit params: OAuthParams, ec: ExecutionContext): Future[CodeResponse] = {
-    val userClientScope = user.scope & client.scope
-    val scope = givenScope.map(_ & userClientScope).getOrElse(userClientScope)
-    if (scope.isEmpty)
-      Future.failed(OAuthError(INVALID_SCOPE, Some("allowed scopes: " + userClientScope)))
-    else for {
-      authInfo <- buildAuthorizationData(client, Some(user), givenScope, givenUri)
+    for {
+      scope <- getGrantedScope(client.scope, Some(user.scope), givenScope).map{s =>
+        if (s.isEmpty) throw OAuthError(INVALID_SCOPE)
+        else s }
+      authInfo <- buildAuthorizationData(client, Some(user), givenScope, givenUri) // use provided scope
       code <- generateAuthCode(authInfo)
     } yield CodeResponse(
-        scope = scope,
-        code = code,
-        redirectUri = givenUri.getOrElse(client.redirectUris.headOption
-          .getOrElse(throw OAuthError(TEMPORARILY_UNAVAILABLE, ErrorDescription(19))))
-      )
+      scope = scope,
+      code = code,
+      redirectUri = givenUri.getOrElse(client.redirectUris.headOption
+        .getOrElse(throw OAuthError(TEMPORARILY_UNAVAILABLE, ErrorDescription(19))))
+    )
   }
 
   def validateClient(id: String, secret: String, grantType: String)
