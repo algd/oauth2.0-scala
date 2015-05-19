@@ -3,7 +3,6 @@ package com.algd.oauth.api
 import akka.http.marshalling.{ToEntityMarshaller, ToResponseMarshallable}
 import akka.http.model.StatusCodes
 import akka.http.server.{Directive, Directive1, Route, Directives}
-import JsonEntities._
 import com.algd.oauth.authorizer.{BaseAuthorizer, Authorizer}
 import com.algd.oauth.data.ValidationManager
 import com.algd.oauth.data.model.{User, TokenResponse}
@@ -18,7 +17,7 @@ import akka.http.server.Directives._
 import scala.util.{Failure, Success}
 
 object OAuth2Support {
-  implicit class GranterRoute[T<:User](granter: BaseGranter[T])(implicit ec: ExecutionContext, vm: ValidationManager[T]) {
+  /*implicit class GranterRoute[T<:User](granter: BaseGranter[T])(implicit ec: ExecutionContext, vm: ValidationManager[T]) {
     def onResponse: Directive1[Either[JsonErrorResponse, JsonTokenResponse]] = {
       parameterMap.flatMap { params =>
         onComplete(granter.apply(params)).flatMap {
@@ -40,7 +39,7 @@ object OAuth2Support {
         }
       }
     }
-  }
+  }*/
 
   def statusCodeFor(error: String) = {
     import OAuthError._

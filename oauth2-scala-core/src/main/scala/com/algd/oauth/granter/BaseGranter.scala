@@ -21,8 +21,10 @@ class BaseGranter[T <: User](private val dataHandler: DataManager[T],
           vm.validateClient(id, secret, grantType).flatMap(granter.process)
             .map(_.copy(state = params.getState))
         }
-      }.getOrElse(Future.failed(
-        OAuthError(UNSUPPORTED_GRANT_TYPE, ErrorDescription(3), params.getState)))
+      }.getOrElse(throw OAuthError(UNSUPPORTED_GRANT_TYPE, ErrorDescription(3)))
+    }.recover{
+      case o: OAuthError => throw o.copy(state = params.getState)
+      case e: Throwable => throw e
     }
   }
 

@@ -64,8 +64,8 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
       else Future.successful(None)
     } yield TokenResponse(
       scope = scope,
-      accessToken = token,
-      refreshToken = refreshToken)
+      access_token = token,
+      refresh_token = refreshToken)
   }
 
   def createAuthCode(client: Client, user: T, givenScope: Option[Set[String]], givenUri: Option[String])
@@ -76,9 +76,8 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
       authInfo <- buildAuthorizationData(client, Some(user), givenScope, givenUri) // use provided scope
       code <- generateAuthCode(authInfo)
     } yield CodeResponse(
-      scope = scope,
       code = code,
-      redirectUri = givenUri.getOrElse(client.redirectUris.headOption
+      redirect_uri = givenUri.getOrElse(client.redirectUris.headOption
         .getOrElse(throw OAuthError(TEMPORARILY_UNAVAILABLE, ErrorDescription(19))))
     )
   }

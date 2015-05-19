@@ -2,6 +2,7 @@ package com.algd.oauth.granter
 
 import com.algd.oauth.data.{ValidationManager, TestUser}
 import com.algd.oauth.data.model.{TokenResponse, Client}
+import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.exception.OAuthError._
 import com.algd.oauth.utils.OAuthParams
 import com.algd.oauth.utils.OAuthParams._
@@ -53,6 +54,10 @@ class BaseGranterSpec extends GranterSuite {
       CLIENT_SECRET -> "client_secret",
       GRANT_TYPE -> mockedGranter.name,
       STATE -> state))
+  } {_.state.get == state}
+
+  expectCondition[OAuthError] ("An error should be thrown giving back the same state") {
+    mGranter(Map(STATE -> state))
   } {_.state.get == state}
 
 }

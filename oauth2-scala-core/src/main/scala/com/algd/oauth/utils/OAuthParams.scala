@@ -4,6 +4,8 @@ import com.algd.oauth.authorizer.ResponseType
 import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.exception.OAuthError._
 
+import scala.concurrent.{ExecutionContext, Future}
+
 /**
  *  Contains OAuth2 parameter names
  */
@@ -41,9 +43,9 @@ class OAuthParams(private val params: Map[String, String] = Map.empty) {
       case _ => throw OAuthError(INVALID_CLIENT)
     }
 
-  def getGrantType[A](f: String => A) =
-    params.get(OAuthParams.GRANT_TYPE).map(f).getOrElse{
-      throw OAuthError(INVALID_REQUEST, ErrorDescription(5))}
+  def getGrantType[A](f: String => Future[A])(implicit ec: ExecutionContext) = Future {
+    params.getOrElse(OAuthParams.GRANT_TYPE,
+      throw OAuthError(INVALID_REQUEST, ErrorDescription(5)))}.flatMap(f)
 
   def getUser[A](f: (String, String) => A) =
     (params.get(OAuthParams.USERNAME), params.get(OAuthParams.PASSWORD)) match {
@@ -55,11 +57,11 @@ class OAuthParams(private val params: Map[String, String] = Map.empty) {
 
   def getState = params.get(OAuthParams.STATE)
 
-  def getResponseType[A](f: String => A) =
+  def getResponseType[A](f: String => Future[A])(implicit ec: ExecutionContext) = Future {
     params.get(OAuthParams.RESPONSE_TYPE).map {
       ResponseType.grantTypeFor(_)
         .getOrElse(throw OAuthError(UNSUPPORTED_RESPONSE_TYPE, ErrorDescription(10)))
-    }.map(f).getOrElse(throw OAuthError(INVALID_REQUEST, ErrorDescription(6)))
+    }.getOrElse(throw OAuthError(INVALID_REQUEST, ErrorDescription(6)))}.flatMap(f)
 
   def getClientId[A](f: String => A) =
     params.get(OAuthParams.CLIENT_ID).map(f).getOrElse(throw OAuthError(INVALID_CLIENT))
