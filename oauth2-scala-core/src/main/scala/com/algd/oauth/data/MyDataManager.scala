@@ -7,7 +7,7 @@ import scala.concurrent.Future
 
 case class TestUser(id: String, scope: Set[String]) extends User
 
-class MyValidationManager extends ValidationManager[TestUser] {
+class MyDataManager extends DataManager[TestUser] {
   val clients: scala.collection.mutable.Map[String, (String, Client)] = scala.collection.mutable.Map(
     "client" -> ("client_secret", Client("Test Client", "client", Set("test"), Set("authorization_code"), List()))
   )

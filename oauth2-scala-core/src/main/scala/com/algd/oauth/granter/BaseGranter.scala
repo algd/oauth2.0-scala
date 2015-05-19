@@ -1,6 +1,6 @@
 package com.algd.oauth.granter
 
-import com.algd.oauth.data.ValidationManager
+import com.algd.oauth.data.{DataManager, ValidationManager}
 import com.algd.oauth.data.model.{TokenResponse, Client, User}
 import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.exception.OAuthError._
@@ -8,11 +8,13 @@ import com.algd.oauth.utils.OAuthParams
 
 import scala.concurrent.{Future, ExecutionContext}
 
-class BaseGranter[T <: User](private val granters: Map[String, Granter[T]] = Map.empty[String, Granter[T]]) {
+class BaseGranter[T <: User](private val dataHandler: DataManager[T],
+  private val granters: Map[String, Granter[T]] = Map.empty[String, Granter[T]]) {
 
   def apply(requestParameters: Map[String, String])
-      (implicit vm: ValidationManager[T], ec: ExecutionContext): Future[TokenResponse] = {
+      (implicit ec: ExecutionContext): Future[TokenResponse] = {
     implicit val params = new OAuthParams(requestParameters)
+    implicit val vm = new ValidationManager(dataHandler)
     params.getGrantType { grantType =>
       granters.get(grantType).map { granter =>
         params.getClient { (id, secret) =>
@@ -23,11 +25,11 @@ class BaseGranter[T <: User](private val granters: Map[String, Granter[T]] = Map
   }
 
   def +(granter: Granter[T]) = {
-    new BaseGranter(granters + (granter.name -> granter))
+    new BaseGranter(dataHandler, granters + (granter.name -> granter))
   }
 
   def ++(granter: Granter[T], newGranters: Granter[T]*) = {
-    new BaseGranter(granters ++ (granter +: newGranters).map(g => g.name -> g))
+    new BaseGranter(dataHandler, granters ++ (granter +: newGranters).map(g => g.name -> g))
   }
 
 }

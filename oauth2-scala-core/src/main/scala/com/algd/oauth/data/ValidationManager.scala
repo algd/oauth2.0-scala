@@ -8,63 +8,9 @@ import org.joda.time.DateTime
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait ValidationManager[T <:  User] {
+class ValidationManager[T <: User](dataHandler: DataManager[T]) {
 
-  def getClient(id: String)
-      (implicit params: OAuthParams): Future[Option[Client]]
-
-  def getClient(id: String, secret: String)
-      (implicit params: OAuthParams): Future[Option[Client]]
-
-  def getUser(username: String, password: String)
-      (implicit params: OAuthParams): Future[Option[T]]
-
-  def getAuthCodeData(code: String)
-      (implicit params: OAuthParams): Future[Option[AuthorizationData[T]]]
-
-  def removeAuthCodeData(code: String)
-      (implicit params: OAuthParams): Future[Option[String]]
-
-  def getRefreshTokenData(refreshToken: String)
-      (implicit params: OAuthParams): Future[Option[AuthorizationData[T]]]
-
-  def removeRefreshTokenData(refreshToken: String)
-      (implicit params: OAuthParams): Future[Option[String]]
-
-  def getAccessTokenData(token: String)
-      (implicit params: OAuthParams) : Future[Option[AuthorizationData[T]]]
-
-  def removeAccessTokenData(token: String)
-      (implicit params: OAuthParams): Future[Option[String]]
-
-  def isValidRedirectUri(uri: String, clientUris: List[String])
-      (implicit params: OAuthParams): Boolean
-
-  def generateAccessToken(authInfo: AuthorizationData[T])
-      (implicit params: OAuthParams) : Future[String]
-
-  def generateRefreshToken(authInfo: AuthorizationData[T])
-      (implicit params: OAuthParams) : Future[String]
-
-  def generateAuthCode(authInfo: AuthorizationData[T])
-      (implicit params: OAuthParams) : Future[String]
-
-  def buildAuthorizationData(client: Client, user: Option[T], scope: Option[Set[String]], redirectUri: Option[String] = None)
-      (implicit params: OAuthParams) : Future[AuthorizationData[T]] = Future.successful {
-    AuthorizationData(client, user, scope, redirectUri)
-  }
-
-  def getGrantedScope(clientScope: Set[String],
-    userScope: Option[Set[String]],
-    requestedScope: Option[Set[String]])(
-    implicit params: OAuthParams): Future[Set[String]] = Future.successful{
-    Seq(Some(clientScope), userScope, requestedScope).flatten.reduce(_&_)
-  }
-
-  // TODO: MyImpl
-  // TODO: MyImpl
-  // TODO: MyImpl
-
+  import dataHandler._
 
   def validateRefreshToken(token: String, clientId: String)
       (implicit params: OAuthParams, ec: ExecutionContext) : Future[AuthorizationData[T]] = {
@@ -110,9 +56,8 @@ trait ValidationManager[T <:  User] {
     allowRefresh: Boolean = true, refreshing : Boolean = false)
       (implicit params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
     for {
-      scope <- getGrantedScope(client.scope, user.map(_.scope), givenScope).map{s =>
-        if (s.isEmpty) throw OAuthError(INVALID_SCOPE)
-        else s }
+      scope <- getGrantedScope(client.scope, user.map(_.scope), givenScope)
+        .map{ s => if (s.isEmpty) throw OAuthError(INVALID_SCOPE) else s }
       authInfo <- buildAuthorizationData(client, user, Some(scope)) //use final scope
       token <- generateAccessToken(authInfo)
       refreshToken <- if (allowRefresh) generateRefreshToken(authInfo).map(Some(_))
@@ -126,9 +71,8 @@ trait ValidationManager[T <:  User] {
   def createAuthCode(client: Client, user: T, givenScope: Option[Set[String]], givenUri: Option[String])
       (implicit params: OAuthParams, ec: ExecutionContext): Future[CodeResponse] = {
     for {
-      scope <- getGrantedScope(client.scope, Some(user.scope), givenScope).map{s =>
-        if (s.isEmpty) throw OAuthError(INVALID_SCOPE)
-        else s }
+      scope <- getGrantedScope(client.scope, Some(user.scope), givenScope)
+        .map{ s => if (s.isEmpty) throw OAuthError(INVALID_SCOPE) else s }
       authInfo <- buildAuthorizationData(client, Some(user), givenScope, givenUri) // use provided scope
       code <- generateAuthCode(authInfo)
     } yield CodeResponse(

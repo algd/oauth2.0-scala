@@ -1,6 +1,6 @@
 package com.algd.oauth.granter
 
-import com.algd.oauth.data.{TestUser, MyValidationManager}
+import com.algd.oauth.data.{MyDataManager, TestUser}
 import com.algd.oauth.data.model.{AuthorizationData, TokenResponse, Client, User}
 import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.exception.OAuthError._
@@ -15,7 +15,7 @@ import org.joda.time.DateTime
 
 class GranterSpec extends FunSuite {
   import scala.concurrent.ExecutionContext.Implicits.global
-  implicit val dataManager = new MyValidationManager
+  implicit val dataManager = new MyDataManager
   implicit val oauthParams = new OAuthParams()
   dataManager.clients +=
     "ccclient" -> ("client_secret", Client("Test Client", "ccclient", Set("test"), Set(GrantType.CLIENT_CREDENTIALS), List()))
@@ -27,7 +27,7 @@ class GranterSpec extends FunSuite {
     "rtclient" -> ("client_secret", Client("Test Client", "rtclient", Set("test", "test3"), Set(GrantType.REFRESH_TOKEN), List("http://redirect.com")))
   dataManager.users += ("marissa" -> ("koala", TestUser("marissa", Set("test", "test2", "test3"))))
 
-  val baseGranter = new BaseGranter[TestUser]()
+  val baseGranter = new BaseGranter[TestUser](dataManager)
   val ccGranter = baseGranter + new ClientCredentialsGranter[TestUser]
   val acGranter = baseGranter + new AuthorizationCodeGranter[TestUser]
   val pGranter = baseGranter + new PasswordGranter[TestUser]

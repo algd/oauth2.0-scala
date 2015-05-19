@@ -1,6 +1,6 @@
 package com.algd.oauth.authorizer
 
-import com.algd.oauth.data.ValidationManager
+import com.algd.oauth.data.{DataManager, ValidationManager}
 import com.algd.oauth.data.model.{Client, User}
 import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.exception.OAuthError._
@@ -8,10 +8,13 @@ import com.algd.oauth.utils.OAuthParams
 
 import scala.concurrent.{Future, ExecutionContext}
 
-class BaseAuthorizer[T <: User, R](private val authorizers: Map[String, Authorizer[T, R]]) {
+class BaseAuthorizer[T <: User, R](
+  private val dataHandler: DataManager[T],
+  private val authorizers: Map[String, Authorizer[T, R]]) {
   def apply(user: T, requestParameters: Map[String, String])
-      (implicit vm: ValidationManager[T], ec: ExecutionContext): Future[R] = {
+      (implicit ec: ExecutionContext): Future[R] = {
     implicit val params = new OAuthParams(requestParameters)
+    implicit val vm = new ValidationManager(dataHandler)
     params.getResponseType { responseType =>
       authorizers.get(responseType).map { authorizer =>
         params.getClientId { id =>
@@ -22,11 +25,11 @@ class BaseAuthorizer[T <: User, R](private val authorizers: Map[String, Authoriz
   }
 
   def +(authorizer: Authorizer[T, R]) = {
-    new BaseAuthorizer(authorizers + (authorizer.name -> authorizer))
+    new BaseAuthorizer(dataHandler, authorizers + (authorizer.name -> authorizer))
   }
 
   def ++(authorizer: Authorizer[T, R], newAuthorizers: Authorizer[T, R]*) = {
-    new BaseAuthorizer(authorizers ++ (authorizer +: newAuthorizers).map(au => au.name -> au))
+    new BaseAuthorizer(dataHandler, authorizers ++ (authorizer +: newAuthorizers).map(au => au.name -> au))
   }
 }
 
