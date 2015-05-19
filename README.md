@@ -1,3 +1,3 @@
 # oauth2.0-scala
-OAuth 2.0 authorization provider implementation for Spray
+OAuth 2.0 authorization provider implementation for Akka-Http
 
