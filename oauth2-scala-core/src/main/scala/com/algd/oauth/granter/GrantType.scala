@@ -14,17 +14,4 @@ object GrantType {
   val REFRESH_TOKEN = "refresh_token"
   /** Keyword for Implicit Grant */
   val IMPLICIT = "implicit"
-
-  /**
-   * Given a Grant Type returns its request handler
-   *  @param grantType grant type contained in a request
-   *  @return right request handler if exists
-   */
-  /*def apply(grantType: String)(implicit data: DataHandler): Option[Granter] = grantType match {
-    case PASSWORD => Some(new PasswordGranter(data))
-    case CLIENT_CREDENTIALS => Some(new ClientCredentialsGranter(data))
-    case AUTHORIZATION_CODE => Some(new AuthorizationCodeGranter(data))
-    case REFRESH_TOKEN => Some(new RefreshTokenGranter(data))
-    case _ => None
-  }*/
 }

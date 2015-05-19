@@ -44,8 +44,6 @@ object OAuthError {
     20 -> "missing refresh_token parameter",
     21 -> "given scope doesn't match requested scope")
   def ErrorDescription(id: Int) = Some(errors(id))
-
-  //def apply[T](id: String): T = throw new OAuthError(id, Some(""))
 }
 
 case class OAuthError(error: String, description: Option[String] = None) extends Exception

@@ -20,7 +20,7 @@ class BaseGranter[T <: User](private val dataHandler: DataManager[T],
         params.getClient { (id, secret) =>
           vm.validateClient(id, secret, grantType).flatMap(granter.process)
         }
-      }.getOrElse(throw OAuthError(UNSUPPORTED_GRANT_TYPE, ErrorDescription(3)))
+      }.getOrElse(Future.failed(OAuthError(UNSUPPORTED_GRANT_TYPE, ErrorDescription(3))))
     }
   }
 
