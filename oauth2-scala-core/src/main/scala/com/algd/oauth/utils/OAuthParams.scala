@@ -53,6 +53,8 @@ class OAuthParams(private val params: Map[String, String] = Map.empty) {
 
   def getScope = params.get(OAuthParams.SCOPE).map(_.split(" ").toSet)
 
+  def getState = params.get(OAuthParams.STATE)
+
   def getResponseType[A](f: String => A) =
     params.get(OAuthParams.RESPONSE_TYPE).map {
       ResponseType.grantTypeFor(_)

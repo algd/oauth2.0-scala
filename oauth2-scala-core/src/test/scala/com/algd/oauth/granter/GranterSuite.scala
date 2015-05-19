@@ -31,7 +31,7 @@ trait GranterSuite extends FunSuite  {
   }
 
   def expectError(error: String)(title: String)(f: => Future[Any]): Unit =
-    expectCondition[OAuthError](title)(f){case OAuthError(err, _) => err == error}
+    expectCondition[OAuthError](title)(f){case OAuthError(err, _, _) => err == error}
 
   def expect[T:ClassTag](title: String)(f: => Future[Any]): Unit =
     expectCondition[T](title)(f){_:T => true}

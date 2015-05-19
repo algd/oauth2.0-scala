@@ -19,6 +19,7 @@ class BaseGranterSpec extends GranterSuite {
   }
 
   val mGranter = granterFor(mockedGranter)
+  val state = "test_state"
 
   dataManager.clients +=
     "client" -> ("client_secret", Client("Test Client", "client", Set("test"), Set(mockedGranter.name), List()))
@@ -46,5 +47,12 @@ class BaseGranterSpec extends GranterSuite {
       CLIENT_SECRET -> "client_secret",
       GRANT_TYPE -> GrantType.CLIENT_CREDENTIALS))
   }
+
+  expectCondition[TokenResponse] ("A token should be issued giving back the same state") {
+    mGranter(Map(CLIENT_ID -> "client",
+      CLIENT_SECRET -> "client_secret",
+      GRANT_TYPE -> mockedGranter.name,
+      STATE -> state))
+  } {_.state.get == state}
 
 }

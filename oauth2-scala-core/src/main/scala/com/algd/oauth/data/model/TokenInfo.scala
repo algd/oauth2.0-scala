@@ -17,13 +17,14 @@ trait User {
 case class TokenResponse(
   scope: Set[String],
   accessToken: String,
-  refreshToken: Option[String] = None)
+  refreshToken: Option[String] = None,
+  state: Option[String] = None)
 
 case class CodeResponse(
   scope: Set[String],
   code: String,
-  redirectUri: String
-)
+  redirectUri: String,
+  state: Option[String] = None)
 
 case class AuthorizationData[T <:  User](
   client: Client,

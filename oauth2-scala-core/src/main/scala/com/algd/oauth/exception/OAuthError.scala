@@ -46,4 +46,7 @@ object OAuthError {
   def ErrorDescription(id: Int) = Some(errors(id))
 }
 
-case class OAuthError(error: String, description: Option[String] = None) extends Exception
+case class OAuthError(
+  error: String,
+  description: Option[String] = None,
+  state: Option[String] = None) extends Exception
