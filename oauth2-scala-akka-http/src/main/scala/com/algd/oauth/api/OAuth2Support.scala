@@ -1,33 +1,37 @@
 package com.algd.oauth.api
 
-import akka.http.marshalling.{ToEntityMarshaller, ToResponseMarshallable}
-import akka.http.model.{StatusCode, StatusCodes}
-import akka.http.server._
+import akka.http.scaladsl.marshalling.{ToEntityMarshaller, ToResponseMarshallable}
+import akka.http.scaladsl.model.{StatusCode, StatusCodes}
+import akka.http.scaladsl.server._
 import com.algd.oauth.authorizer.{ResponseType, BaseAuthorizer}
 import com.algd.oauth.data.model.{CodeResponse, User, TokenResponse}
 import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.granter.BaseGranter
 
 import scala.concurrent.ExecutionContext
-import akka.http.server.Directives._
+import akka.http.scaladsl.server.Directives._
 import ToResponseMarshallable._
 
 object OAuth2Support {
 
-  def oauthExceptionHandler(implicit ec: ExecutionContext) = ExceptionHandler {
+  def oauthExceptionHandler(
+    implicit ec: ExecutionContext,
+    tem: ToEntityMarshaller[OAuthError]) = ExceptionHandler {
     case e@OAuthError(error, _, _) => complete(statusCodeFor(error) -> e)
   }
 
   implicit class GranterRoute[T<:User](granter: BaseGranter[T]) {
     def route(params: Map[String, String])
-      (implicit ec: ExecutionContext, tem: ToEntityMarshaller[TokenResponse]): Route = {
+      (implicit ec: ExecutionContext,
+        tem: ToEntityMarshaller[TokenResponse],
+        teme: ToEntityMarshaller[OAuthError]): Route = {
       handleExceptions(oauthExceptionHandler)(complete(granter(params)))
     }
   }
 
   implicit class AuthorizerRoute[T<:User, R <: Product](authorizer: BaseAuthorizer[T, R]) {
     def route(user: T, params: Map[String, String])
-      (implicit ec: ExecutionContext): Route = {
+      (implicit ec: ExecutionContext, tem: ToEntityMarshaller[OAuthError]): Route = {
       handleExceptions(oauthExceptionHandler){
         onSuccess(authorizer(user, params)) { uri =>
           val char = uri.response match { case _:CodeResponse => '#'; case _ => '?'}
