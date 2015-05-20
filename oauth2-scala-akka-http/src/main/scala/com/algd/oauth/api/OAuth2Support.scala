@@ -1,47 +1,43 @@
 package com.algd.oauth.api
 
 import akka.http.marshalling.{ToEntityMarshaller, ToResponseMarshallable}
-import akka.http.model.StatusCodes
-import akka.http.server.{Directive, Directive1, Route, Directives}
-import com.algd.oauth.authorizer.{BaseAuthorizer, Authorizer}
-import com.algd.oauth.data.ValidationManager
-import com.algd.oauth.data.model.{User, TokenResponse}
+import akka.http.model.{StatusCode, StatusCodes}
+import akka.http.server._
+import com.algd.oauth.authorizer.{ResponseType, BaseAuthorizer}
+import com.algd.oauth.data.model.{CodeResponse, User, TokenResponse}
 import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.granter.BaseGranter
-import com.algd.oauth.utils.OAuthParams
 
-import scala.concurrent.{Future, ExecutionContext}
-import akka.http.marshallers.sprayjson.SprayJsonSupport._
+import scala.concurrent.ExecutionContext
 import akka.http.server.Directives._
-
-import scala.util.{Failure, Success}
+import ToResponseMarshallable._
 
 object OAuth2Support {
-  /*implicit class GranterRoute[T<:User](granter: BaseGranter[T])(implicit ec: ExecutionContext, vm: ValidationManager[T]) {
-    def onResponse: Directive1[Either[JsonErrorResponse, JsonTokenResponse]] = {
-      parameterMap.flatMap { params =>
-        onComplete(granter.apply(params)).flatMap {
-          case Success(response) => provide(Right(jsonTokenWithState(response, params.get(OAuthParams.STATE))))
-          case Failure(error: OAuthError) => provide(Left(jsonErrorWithState(error, params.get(OAuthParams.STATE))))
-          case Failure(another) => throw another
+
+  def oauthExceptionHandler(implicit ec: ExecutionContext) = ExceptionHandler {
+    case e@OAuthError(error, _, _) => complete(statusCodeFor(error) -> e)
+  }
+
+  implicit class GranterRoute[T<:User](granter: BaseGranter[T]) {
+    def route(params: Map[String, String])
+      (implicit ec: ExecutionContext, tem: ToEntityMarshaller[TokenResponse]): Route = {
+      handleExceptions(oauthExceptionHandler)(complete(granter(params)))
+    }
+  }
+
+  implicit class AuthorizerRoute[T<:User, R <: Product](authorizer: BaseAuthorizer[T, R]) {
+    def route(user: T, params: Map[String, String])
+      (implicit ec: ExecutionContext): Route = {
+      handleExceptions(oauthExceptionHandler){
+        onSuccess(authorizer(user, params)) { uri =>
+          val char = uri.response match { case _:CodeResponse => '#'; case _ => '?'}
+          redirect(ResponseType.buildRedirectUri(uri, char), StatusCodes.MovedPermanently)
         }
       }
     }
   }
 
-  implicit class AuthorizerRoute[T<:User, R](auth: BaseAuthorizer[T, R])(implicit ec: ExecutionContext, vm: ValidationManager[T]) {
-    def onResponse(user: T): Directive1[Either[JsonErrorResponse, R]] = {
-      parameterMap.flatMap { params =>
-        onComplete(auth.apply(user, params)).flatMap {
-          case Success(response) => null //provide(Right(jsonTokenWithState(response, params.get(OAuthParams.STATE))))
-          case Failure(error: OAuthError) => provide(Left(jsonErrorWithState(error, params.get(OAuthParams.STATE))))
-          case Failure(another) => throw another
-        }
-      }
-    }
-  }*/
-
-  def statusCodeFor(error: String) = {
+  def statusCodeFor(error: String): StatusCode = {
     import OAuthError._
     error match {
       case INVALID_CLIENT
