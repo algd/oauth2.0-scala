@@ -56,5 +56,5 @@ class PasswordGranterSpec extends GranterSuite {
       USERNAME -> "marissa",
       PASSWORD -> "koala",
       SCOPE -> "test2 test3"))
-  } { _.scope == Set("test3") }
+  } { _.scope == "test3" }
 }

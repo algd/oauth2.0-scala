@@ -15,7 +15,7 @@ trait User {
 }
 
 case class TokenResponse(
-  scope: Set[String],
+  scope: String,
   access_token: String,
   refresh_token: Option[String] = None,
   state: Option[String] = None)

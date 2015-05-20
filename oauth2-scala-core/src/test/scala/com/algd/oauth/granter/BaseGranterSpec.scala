@@ -11,7 +11,7 @@ import com.algd.oauth.utils.OAuthParams._
 import scala.concurrent.{Future, ExecutionContext}
 
 class BaseGranterSpec extends GranterSuite {
-  val tokenResponse = TokenResponse(Set(), "")
+  val tokenResponse = TokenResponse("", "")
   val mockedGranter = new Granter[TestUser] {
     override val name: String = "testName"
     override def process(client: Client)(

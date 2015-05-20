@@ -63,7 +63,7 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
       refreshToken <- if (allowRefresh) generateRefreshToken(authInfo).map(Some(_))
       else Future.successful(None)
     } yield TokenResponse(
-      scope = scope,
+      scope = scope.mkString(" "),
       access_token = token,
       refresh_token = refreshToken)
   }

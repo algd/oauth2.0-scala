@@ -34,7 +34,7 @@ object OAuth2Support {
       (implicit ec: ExecutionContext, tem: ToEntityMarshaller[OAuthError]): Route = {
       handleExceptions(oauthExceptionHandler){
         onSuccess(authorizer(user, params)) { uri =>
-          val char = uri.response match { case _:CodeResponse => '#'; case _ => '?'}
+          val char = uri.response match { case _:TokenResponse => '#'; case _ => '?'}
           redirect(ResponseType.buildRedirectUri(uri, char), StatusCodes.MovedPermanently)
         }
       }
