@@ -20,9 +20,11 @@ case class TokenResponse(
   refresh_token: Option[String] = None,
   state: Option[String] = None)
 
-case class CodeResponse(
-  code: String,
-  redirect_uri: String,
+case class CodeResponse(code: String)
+
+case class UriResponse[+R <: Product](
+  baseUri: String,
+  response: R,
   state: Option[String] = None)
 
 case class AuthorizationData[T <:  User](

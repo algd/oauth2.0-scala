@@ -54,10 +54,10 @@ class BaseGranterSpec extends GranterSuite {
       CLIENT_SECRET -> "client_secret",
       GRANT_TYPE -> mockedGranter.name,
       STATE -> state))
-  } {_.state.get == state}
+  } {_.state.contains(state)}
 
   expectCondition[OAuthError] ("An error should be thrown giving back the same state") {
     mGranter(Map(STATE -> state))
-  } {_.state.get == state}
+  } {_.state.contains(state)}
 
 }

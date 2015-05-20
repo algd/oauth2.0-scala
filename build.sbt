@@ -2,7 +2,7 @@
 
 scalaVersion in ThisBuild := "2.11.5"
 
-scalacOptions in ThisBuild := Seq("-unchecked", "-deprecation", "-encoding", "utf8")
+scalacOptions in ThisBuild := Seq("-unchecked", "-deprecation", "-encoding", "utf8", "-feature")
 
 lazy val root = (project in file("."))
   .aggregate(

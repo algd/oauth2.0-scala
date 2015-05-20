@@ -68,18 +68,26 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
       refresh_token = refreshToken)
   }
 
+  def createImplicitAccessToken(client: Client, user: T, givenScope: Option[Set[String]])
+    (implicit params: OAuthParams, ec: ExecutionContext): Future[UriResponse[TokenResponse]] = {
+    val redirectUri = params.getRedirectUri.getOrElse(client.redirectUris.headOption
+      .getOrElse(throw OAuthError(TEMPORARILY_UNAVAILABLE, ErrorDescription(19))))
+    createAccessToken(client, Some(user), givenScope, allowRefresh = false).map{
+      response => UriResponse(baseUri = redirectUri, response = response)
+    }
+  }
+
   def createAuthCode(client: Client, user: T, givenScope: Option[Set[String]], givenUri: Option[String])
-      (implicit params: OAuthParams, ec: ExecutionContext): Future[CodeResponse] = {
+    (implicit params: OAuthParams, ec: ExecutionContext): Future[UriResponse[CodeResponse]] = {
+    val redirectUri = givenUri.getOrElse(client.redirectUris.headOption
+      .getOrElse(throw OAuthError(TEMPORARILY_UNAVAILABLE, ErrorDescription(19))))
     for {
       scope <- getGrantedScope(client.scope, Some(user.scope), givenScope)
         .map{ s => if (s.isEmpty) throw OAuthError(INVALID_SCOPE) else s }
       authInfo <- buildAuthorizationData(client, Some(user), givenScope, givenUri) // use provided scope
       code <- generateAuthCode(authInfo)
-    } yield CodeResponse(
-      code = code,
-      redirect_uri = givenUri.getOrElse(client.redirectUris.headOption
-        .getOrElse(throw OAuthError(TEMPORARILY_UNAVAILABLE, ErrorDescription(19))))
-    )
+    } yield UriResponse(baseUri = redirectUri,
+      response = CodeResponse(code))
   }
 
   def validateClient(id: String, secret: String, grantType: String)
@@ -105,5 +113,10 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
     getUser(username, password).map{
       _.getOrElse(throw OAuthError(INVALID_GRANT))
     }
+  }
+
+  def validateUri(client: Client, uri: String)
+    (implicit params: OAuthParams, ec: ExecutionContext): Boolean = {
+    isValidRedirectUri(uri, client.redirectUris)
   }
 }

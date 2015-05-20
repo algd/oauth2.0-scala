@@ -58,10 +58,8 @@ class OAuthParams(private val params: Map[String, String] = Map.empty) {
   def getState = params.get(OAuthParams.STATE)
 
   def getResponseType[A](f: String => Future[A])(implicit ec: ExecutionContext) = Future {
-    params.get(OAuthParams.RESPONSE_TYPE).map {
-      ResponseType.grantTypeFor(_)
-        .getOrElse(throw OAuthError(UNSUPPORTED_RESPONSE_TYPE, ErrorDescription(10)))
-    }.getOrElse(throw OAuthError(INVALID_REQUEST, ErrorDescription(6)))}.flatMap(f)
+    params.get(OAuthParams.RESPONSE_TYPE).map(ResponseType.grantTypeFor)
+      .getOrElse(throw OAuthError(INVALID_REQUEST, ErrorDescription(6)))}.flatMap(f)
 
   def getClientId[A](f: String => A) =
     params.get(OAuthParams.CLIENT_ID).map(f).getOrElse(throw OAuthError(INVALID_CLIENT))

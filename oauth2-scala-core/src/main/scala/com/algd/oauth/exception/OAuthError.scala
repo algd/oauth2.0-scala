@@ -49,4 +49,4 @@ object OAuthError {
 case class OAuthError(
   error: String,
   description: Option[String] = None,
-  state: Option[String] = None) extends Exception
+  state: Option[String] = None) extends Exception(error + ": " + description.mkString(""))
