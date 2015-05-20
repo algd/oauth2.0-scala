@@ -1,7 +1,6 @@
 package com.algd.oauth.authorizer
 
-import com.algd.oauth.OAuthSpec
-import com.algd.oauth.data.{TestUser, MyDataManager}
+import com.algd.oauth.{TestUser, MyDataManager, OAuthSpec}
 import com.algd.oauth.utils.OAuthParams
 
 trait AuthorizerSuite extends OAuthSpec {

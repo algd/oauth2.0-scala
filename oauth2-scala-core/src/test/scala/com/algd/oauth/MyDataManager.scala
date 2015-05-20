@@ -1,5 +1,6 @@
-package com.algd.oauth.data
+package com.algd.oauth
 
+import com.algd.oauth.data.DataManager
 import com.algd.oauth.data.model.{AuthorizationData, Client, User}
 import com.algd.oauth.utils.OAuthParams
 
@@ -8,9 +9,7 @@ import scala.concurrent.Future
 case class TestUser(id: String, scope: Set[String]) extends User
 
 class MyDataManager extends DataManager[TestUser] {
-  val clients: scala.collection.mutable.Map[String, (String, Client)] = scala.collection.mutable.Map(
-    "client" -> ("client_secret", Client("Test Client", "client", Set("test"), Set("authorization_code"), List()))
-  )
+  val clients: scala.collection.mutable.Map[String, (String, Client)] = scala.collection.mutable.Map()
   val users: scala.collection.mutable.Map[String, (String, TestUser)] = scala.collection.mutable.Map()
   val authCodes: scala.collection.mutable.Map[String, AuthorizationData[TestUser]] = scala.collection.mutable.Map()
   val tokenDatas: scala.collection.mutable.Map[String, AuthorizationData[TestUser]] = scala.collection.mutable.Map()
@@ -71,14 +70,14 @@ class MyDataManager extends DataManager[TestUser] {
   def generateAccessToken(authInfo: AuthorizationData[TestUser])
       (implicit params: OAuthParams) : Future[String] = {
     val token = java.util.UUID.randomUUID().toString
-    //tokenDatas += token -> AuthorizationData[TestUser](client, user.orNull[TestUser], Some(scope))
+    tokenDatas += token -> AuthorizationData(authInfo.client, authInfo.user, authInfo.scope)
     Future.successful(token)
   }
 
   def generateRefreshToken(authInfo: AuthorizationData[TestUser])
       (implicit params: OAuthParams) : Future[String] = {
     val token = java.util.UUID.randomUUID().toString
-    //refTokenDatas += token -> AuthorizationData[TestUser](client, user.get, Some(scope))
+    refTokenDatas += token -> AuthorizationData(authInfo.client, authInfo.user, authInfo.scope)
     Future.successful(token)
   }
 

@@ -1,7 +1,8 @@
 package com.algd.oauth.authorizer
 
+import com.algd.oauth.TestUser
 import com.algd.oauth.data.model.{UriResponse, Client}
-import com.algd.oauth.data.{ValidationManager, TestUser}
+import com.algd.oauth.data.ValidationManager
 import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.utils.OAuthParams
 import OAuthParams._

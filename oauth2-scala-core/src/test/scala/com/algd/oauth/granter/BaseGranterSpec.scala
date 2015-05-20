@@ -1,6 +1,7 @@
 package com.algd.oauth.granter
 
-import com.algd.oauth.data.{ValidationManager, TestUser}
+import com.algd.oauth.TestUser
+import com.algd.oauth.data.ValidationManager
 import com.algd.oauth.data.model.{TokenResponse, Client}
 import com.algd.oauth.exception.OAuthError
 import com.algd.oauth.exception.OAuthError._

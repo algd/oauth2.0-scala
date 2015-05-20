@@ -1,7 +1,6 @@
 package com.algd.oauth.granter
 
-import com.algd.oauth.OAuthSpec
-import com.algd.oauth.data.{TestUser, MyDataManager}
+import com.algd.oauth.{TestUser, MyDataManager, OAuthSpec}
 import com.algd.oauth.utils.OAuthParams
 
 trait GranterSuite extends OAuthSpec {
