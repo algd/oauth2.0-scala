@@ -29,8 +29,8 @@ lazy val `oauth2-scala-akka-http` = project
   .settings(
     mainClass in Compile := None,
     libraryDependencies ++= {
-      val akkaV       = "2.3.10"
-      val akkaStreamV = "1.0-RC2"
+      val akkaV       = "2.4-M1"
+      val akkaStreamV = "1.0-RC3"
       val scalaTestV  = "2.2.4"
       Seq(
         "com.typesafe.akka" %% "akka-actor"                           % akkaV,
