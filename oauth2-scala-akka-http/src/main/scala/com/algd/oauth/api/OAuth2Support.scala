@@ -12,27 +12,30 @@ import scala.concurrent.ExecutionContext
 import akka.http.scaladsl.server.Directives._
 import ToResponseMarshallable._
 
-object OAuth2Support {
+trait OAuth2Support {
 
-  def oauthExceptionHandler(
+  private def oauthExceptionHandler(
     implicit ec: ExecutionContext,
     tem: ToEntityMarshaller[OAuthError]) = ExceptionHandler {
     case e@OAuthError(error, _, _) => complete(statusCodeFor(error) -> e)
   }
+
+  def customOAuthExceptionHandler: Option[ExceptionHandler] = None
 
   implicit class GranterRoute[T<:User](granter: BaseGranter[T]) {
     def route(params: Map[String, String])
       (implicit ec: ExecutionContext,
         tem: ToEntityMarshaller[TokenResponse],
         teme: ToEntityMarshaller[OAuthError]): Route = {
-      handleExceptions(oauthExceptionHandler)(complete(granter(params)))
+      handleExceptions(customOAuthExceptionHandler
+        .getOrElse(oauthExceptionHandler))(complete(granter(params)))
     }
   }
 
   implicit class AuthorizerRoute[T<:User, R <: Product](authorizer: BaseAuthorizer[T, R]) {
     def route(user: T, params: Map[String, String])
       (implicit ec: ExecutionContext, tem: ToEntityMarshaller[OAuthError]): Route = {
-      handleExceptions(oauthExceptionHandler){
+      handleExceptions(customOAuthExceptionHandler.getOrElse(oauthExceptionHandler)){
         onSuccess(authorizer(user, params)) { uri =>
           val char = uri.response match { case _:TokenResponse => '#'; case _ => '?'}
           redirect(ResponseType.buildRedirectUri(uri, char), StatusCodes.MovedPermanently)
@@ -61,3 +64,5 @@ object OAuth2Support {
     }
   }
 }
+
+object OAuth2Support extends OAuth2Support
