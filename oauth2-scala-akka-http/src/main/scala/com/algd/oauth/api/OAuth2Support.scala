@@ -38,7 +38,7 @@ trait OAuth2Support {
       handleExceptions(customOAuthExceptionHandler.getOrElse(oauthExceptionHandler)){
         onSuccess(authorizer(user, params)) { uri =>
           val char = uri.response match { case _:TokenResponse => '#'; case _ => '?'}
-          redirect(ResponseType.buildRedirectUri(uri, char), StatusCodes.MovedPermanently)
+          redirect(ResponseType.buildRedirectUri(uri, char), StatusCodes.Found)
         }
       }
     }
