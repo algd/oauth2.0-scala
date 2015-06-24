@@ -11,7 +11,6 @@ case class Client(
 
 trait User {
   val id: String
-  val scope: Set[String]
 }
 
 case class TokenResponse(
