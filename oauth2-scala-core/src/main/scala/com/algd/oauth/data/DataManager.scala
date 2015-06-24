@@ -46,6 +46,11 @@ trait DataManager[T <: User] {
   def generateAuthCode(authInfo: AuthorizationData[T])
     (implicit params: OAuthParams) : Future[String]
 
+  def getUserScope(user: Option[T])
+    (implicit params: OAuthParams): Future[Option[Set[String]]] = {
+    Future.successful(user.map(_.scope))
+  }
+
   def buildAuthorizationData(client: Client, user: Option[T], scope: Option[Set[String]], redirectUri: Option[String] = None)
     (implicit params: OAuthParams) : Future[AuthorizationData[T]] = Future.successful {
     AuthorizationData(client, user, scope, redirectUri)

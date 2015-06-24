@@ -56,7 +56,8 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
     allowRefresh: Boolean = true, refreshing : Boolean = false)
       (implicit params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
     for {
-      scope <- getGrantedScope(client.scope, user.map(_.scope), givenScope)
+      userScope <- getUserScope(user)
+      scope <- getGrantedScope(client.scope, userScope, givenScope)
         .map{ s => if (s.isEmpty) throw OAuthError(INVALID_SCOPE) else s }
       authInfo <- buildAuthorizationData(client, user, Some(scope)) //use final scope
       token <- generateAccessToken(authInfo)
@@ -82,7 +83,8 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
     val redirectUri = givenUri.getOrElse(client.redirectUris.headOption
       .getOrElse(throw OAuthError(TEMPORARILY_UNAVAILABLE, ErrorDescription(19))))
     for {
-      scope <- getGrantedScope(client.scope, Some(user.scope), givenScope)
+      userScope <- getUserScope(Some(user))
+      scope <- getGrantedScope(client.scope, userScope, givenScope)
         .map{ s => if (s.isEmpty) throw OAuthError(INVALID_SCOPE) else s }
       authInfo <- buildAuthorizationData(client, Some(user), givenScope, givenUri) // use provided scope
       code <- generateAuthCode(authInfo)
