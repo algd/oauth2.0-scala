@@ -35,7 +35,7 @@ trait DataManager[T <: User] {
     (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[String]]
 
   def isValidRedirectUri(uri: String, clientUris: List[String])
-    (implicit params: OAuthParams, ec: ExecutionContext): Boolean
+    (implicit params: OAuthParams): Boolean
 
   def generateAccessToken(authInfo: AuthorizationData[T])
     (implicit params: OAuthParams, ec: ExecutionContext) : Future[String]

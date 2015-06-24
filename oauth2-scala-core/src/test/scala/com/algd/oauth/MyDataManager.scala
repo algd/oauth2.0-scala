@@ -63,7 +63,7 @@ class MyDataManager extends DataManager[TestUser] {
   }
 
   def isValidRedirectUri(uri: String, clientUris: List[String])
-      (implicit params: OAuthParams, ec: ExecutionContext): Boolean = {
+      (implicit params: OAuthParams): Boolean = {
     clientUris.exists(clientUri => uri.startsWith(clientUri))
   }
 
