@@ -35,8 +35,7 @@ lazy val `oauth2-scala-akka-http` = project
       Seq(
         "com.typesafe.akka" %% "akka-actor"                           % akkaV,
         "com.typesafe.akka" %% "akka-stream-experimental"             % akkaStreamV,
-        "com.typesafe.akka" %% "akka-http-core-experimental"          % akkaStreamV,
-        "com.typesafe.akka" %% "akka-http-spray-json-experimental"    % akkaStreamV
+        "com.typesafe.akka" %% "akka-http-experimental"               % akkaStreamV
       )
     }
   ).dependsOn(`oauth2-scala-core`)
