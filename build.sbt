@@ -1,6 +1,6 @@
 
 
-scalaVersion in ThisBuild := "2.11.5"
+scalaVersion in ThisBuild := "2.11.7"
 
 organization in ThisBuild := "com.algd"
 
@@ -30,7 +30,7 @@ lazy val `oauth2-scala-akka-http` = project
     mainClass in Compile := None,
     libraryDependencies ++= {
       val akkaV       = "2.4-M1"
-      val akkaStreamV = "1.0-RC3"
+      val akkaStreamV = "1.0"
       val scalaTestV  = "2.2.4"
       Seq(
         "com.typesafe.akka" %% "akka-actor"                           % akkaV,
