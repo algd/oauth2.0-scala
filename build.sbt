@@ -1,10 +1,12 @@
-
+name := "oauth2.0-scala"
 
 scalaVersion in ThisBuild := "2.11.7"
 
 organization in ThisBuild := "com.algd"
 
-scalacOptions in ThisBuild := Seq("-unchecked", "-deprecation", "-encoding", "utf8", "-feature")
+version in ThisBuild := "0.1.0"
+
+scalacOptions in ThisBuild := Seq("-unchecked", "-deprecation", "-target:jvm-1.8", "-encoding", "utf8", "-feature")
 
 lazy val root = (project in file("."))
   .aggregate(
@@ -29,7 +31,7 @@ lazy val `oauth2-scala-akka-http` = project
   .settings(
     mainClass in Compile := None,
     libraryDependencies ++= {
-      val akkaV       = "2.4-M1"
+      val akkaV       = "2.4.0"
       val akkaStreamV = "1.0"
       val scalaTestV  = "2.2.4"
       Seq(
