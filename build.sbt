@@ -4,7 +4,7 @@ scalaVersion in ThisBuild := "2.11.7"
 
 organization in ThisBuild := "com.algd"
 
-version in ThisBuild := "0.2.0"
+version in ThisBuild := "0.2.1"
 
 scalacOptions in ThisBuild := Seq("-unchecked", "-deprecation", "-target:jvm-1.8", "-encoding", "utf8", "-feature")
 
