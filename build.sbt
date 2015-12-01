@@ -4,7 +4,7 @@ scalaVersion in ThisBuild := "2.11.7"
 
 organization in ThisBuild := "com.algd"
 
-version in ThisBuild := "0.2.1"
+version in ThisBuild := "0.2.2"
 
 scalacOptions in ThisBuild := Seq("-unchecked", "-deprecation", "-target:jvm-1.8", "-encoding", "utf8", "-feature")
 
@@ -31,8 +31,8 @@ lazy val `oauth2-scala-akka-http` = project
   .settings(
     mainClass in Compile := None,
     libraryDependencies ++= {
-      val akkaV       = "2.4.0"
-      val akkaStreamV = "2.0-M1"
+      val akkaV       = "2.4.1"
+      val akkaStreamV = "2.0-M2"
       val scalaTestV  = "2.2.4"
       Seq(
         "com.typesafe.akka" %% "akka-actor"                           % akkaV,
