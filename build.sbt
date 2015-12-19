@@ -1,10 +1,12 @@
+name := "oauth2.0-scala"
 
-
-scalaVersion in ThisBuild := "2.11.5"
+scalaVersion in ThisBuild := "2.11.7"
 
 organization in ThisBuild := "com.algd"
 
-scalacOptions in ThisBuild := Seq("-unchecked", "-deprecation", "-encoding", "utf8", "-feature")
+version in ThisBuild := "0.2.2"
+
+scalacOptions in ThisBuild := Seq("-unchecked", "-deprecation", "-target:jvm-1.8", "-encoding", "utf8", "-feature")
 
 lazy val root = (project in file("."))
   .aggregate(
@@ -29,14 +31,13 @@ lazy val `oauth2-scala-akka-http` = project
   .settings(
     mainClass in Compile := None,
     libraryDependencies ++= {
-      val akkaV       = "2.3.10"
-      val akkaStreamV = "1.0-RC2"
+      val akkaV       = "2.4.1"
+      val akkaStreamV = "2.0-M2"
       val scalaTestV  = "2.2.4"
       Seq(
         "com.typesafe.akka" %% "akka-actor"                           % akkaV,
         "com.typesafe.akka" %% "akka-stream-experimental"             % akkaStreamV,
-        "com.typesafe.akka" %% "akka-http-core-experimental"          % akkaStreamV,
-        "com.typesafe.akka" %% "akka-http-spray-json-experimental"    % akkaStreamV
+        "com.typesafe.akka" %% "akka-http-experimental"               % akkaStreamV
       )
     }
   ).dependsOn(`oauth2-scala-core`)
