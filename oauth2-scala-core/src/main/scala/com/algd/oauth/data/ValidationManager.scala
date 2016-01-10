@@ -8,6 +8,11 @@ import org.joda.time.DateTime
 
 import scala.concurrent.{ExecutionContext, Future}
 
+/**
+ *
+ * @param dataHandler
+ * @tparam T
+ */
 class ValidationManager[T <: User](dataHandler: DataManager[T]) {
 
   import dataHandler._
@@ -22,7 +27,7 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
         case other => Future.successful(other.find(_.client.id == clientId))
       }
     } yield nonExpiredData
-      .getOrElse(throw OAuthError(INVALID_GRANT, ErrorDescription(9)))
+      .getOrElse(throw OAuthError(INVALID_GRANT, Some(INVALID_REFRESH_TOKEN)))
   }
   
   def validateAccessToken(token: String)
@@ -35,7 +40,7 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
         case other => Future.successful(other)
       }
     } yield nonExpiredData
-      .getOrElse(throw OAuthError(INVALID_TOKEN, ErrorDescription(13)))
+      .getOrElse(throw OAuthError(INVALID_TOKEN, Some(INVALID_OR_EXPIRED_TOKEN)))
   }
 
   def validateCode(code: String, clientId: String, redirectUri: Option[String])
@@ -45,9 +50,9 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
       nonExpiredData <- removeAuthCodeData(code) // Always remove
     } yield {
       val authData = tokenData.find(_.client.id == clientId)
-        .getOrElse(throw OAuthError(INVALID_GRANT, ErrorDescription(12)))
+        .getOrElse(throw OAuthError(INVALID_GRANT, Some(AUTH_CODE_NOT_FOUND)))
       if (redirectUri.isDefined && redirectUri != authData.givenRedirectUri)
-        throw OAuthError(UNAUTHORIZED_CLIENT, ErrorDescription(11))
+        throw OAuthError(UNAUTHORIZED_CLIENT, Some(INCORRECT_REDIRECT_URI))
       authData
     }
   }
@@ -72,7 +77,7 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
   def createImplicitAccessToken(client: Client, user: T, givenScope: Option[Set[String]])
     (implicit params: OAuthParams, ec: ExecutionContext): Future[UriResponse[TokenResponse]] = {
     val redirectUri = params.getRedirectUri.getOrElse(client.redirectUris.headOption
-      .getOrElse(throw OAuthError(TEMPORARILY_UNAVAILABLE, ErrorDescription(19))))
+      .getOrElse(throw OAuthError(TEMPORARILY_UNAVAILABLE, Some(REDIRECT_URI_REQUIRED))))
     createAccessToken(client, Some(user), givenScope, allowRefresh = false).map{
       response => UriResponse(baseUri = redirectUri, response = response)
     }
@@ -81,7 +86,7 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
   def createAuthCode(client: Client, user: T, givenScope: Option[Set[String]], givenUri: Option[String])
     (implicit params: OAuthParams, ec: ExecutionContext): Future[UriResponse[CodeResponse]] = {
     val redirectUri = givenUri.getOrElse(client.redirectUris.headOption
-      .getOrElse(throw OAuthError(TEMPORARILY_UNAVAILABLE, ErrorDescription(19))))
+      .getOrElse(throw OAuthError(TEMPORARILY_UNAVAILABLE, Some(REDIRECT_URI_REQUIRED))))
     for {
       userScope <- getUserScope(Some(user))
       scope <- getGrantedScope(client.scope, userScope, givenScope)
@@ -96,7 +101,7 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
       (implicit params: OAuthParams, ec: ExecutionContext): Future[Client] = {
     getClient(id, secret).map {
       case Some(client) if client.allowedGrants.contains(grantType) => client
-      case Some(_) => throw OAuthError(UNAUTHORIZED_CLIENT, ErrorDescription(1))
+      case Some(_) => throw OAuthError(UNAUTHORIZED_CLIENT, Some(GRANT_NOT_ALLOWED))
       case None => throw OAuthError(INVALID_CLIENT)
     }
   }
@@ -105,7 +110,7 @@ class ValidationManager[T <: User](dataHandler: DataManager[T]) {
       (implicit params: OAuthParams, ec: ExecutionContext): Future[Client] = {
     getClient(id).map {
       case Some(client) if client.allowedGrants.contains(grantType) => client
-      case Some(_) => throw OAuthError(UNAUTHORIZED_CLIENT, ErrorDescription(1))
+      case Some(_) => throw OAuthError(UNAUTHORIZED_CLIENT, Some(GRANT_NOT_ALLOWED))
       case None => throw OAuthError(INVALID_CLIENT)
     }
   }

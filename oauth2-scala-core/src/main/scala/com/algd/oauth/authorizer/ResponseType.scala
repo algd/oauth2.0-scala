@@ -26,6 +26,14 @@ object ResponseType {
     case other => other
   }
 
+  /**
+   * This method builds the url that the user will be redirected to.
+   * @param uriResponse
+   * @param symbol
+   * @param encoding
+   * @tparam T
+   * @return
+   */
   def buildRedirectUri[T <: Product](
     uriResponse: UriResponse[T],
     symbol: Char,

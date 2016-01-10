@@ -12,8 +12,7 @@ import scala.concurrent.{Future, ExecutionContext}
 
 class BaseGranterSpec extends GranterSuite {
   val tokenResponse = TokenResponse("", "")
-  val mockedGranter = new Granter[TestUser] {
-    override val name: String = "testName"
+  val mockedGranter = new Granter[TestUser]("testName") {
     override def process(client: Client)(
       implicit vm: ValidationManager[TestUser],
       params: OAuthParams,

@@ -21,7 +21,7 @@ class BaseGranter[T <: User](private val dataHandler: DataManager[T],
           vm.validateClient(id, secret, grantType).flatMap(granter.process)
             .map(_.copy(state = params.getState))
         }
-      }.getOrElse(throw OAuthError(UNSUPPORTED_GRANT_TYPE, ErrorDescription(3)))
+      }.getOrElse(throw OAuthError(UNSUPPORTED_GRANT_TYPE, Some(UNSUPPORTED_GRANT)))
     }.recover{
       case o: OAuthError => throw o.copy(state = params.getState)
       case e: Throwable => throw e
@@ -38,8 +38,7 @@ class BaseGranter[T <: User](private val dataHandler: DataManager[T],
 
 }
 
-trait Granter[T <: User] {
-  val name: String
+abstract class Granter[T <: User](val name: String) {
 
   def process(client: Client)
       (implicit vm: ValidationManager[T], params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse]

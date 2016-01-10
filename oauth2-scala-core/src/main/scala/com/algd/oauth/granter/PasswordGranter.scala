@@ -6,9 +6,7 @@ import com.algd.oauth.utils.OAuthParams
 
 import scala.concurrent.{Future, ExecutionContext}
 
-class PasswordGranter[T <: User] extends Granter[T] {
-  val name = GrantType.PASSWORD
-
+class PasswordGranter[T <: User] extends Granter[T](GrantType.PASSWORD) {
   def process(client: Client)
       (implicit vm: ValidationManager[T], params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
     params.getUser { (username, password) =>

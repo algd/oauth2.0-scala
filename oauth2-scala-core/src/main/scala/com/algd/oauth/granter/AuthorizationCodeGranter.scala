@@ -8,15 +8,13 @@ import com.algd.oauth.utils.OAuthParams
 
 import scala.concurrent.{Future, ExecutionContext}
 
-class AuthorizationCodeGranter[T <: User] extends Granter[T] {
-  val name = GrantType.AUTHORIZATION_CODE
-
+class AuthorizationCodeGranter[T <: User] extends Granter[T](GrantType.AUTHORIZATION_CODE) {
   def process(client: Client)
       (implicit validationManager: ValidationManager[T], params: OAuthParams, ec: ExecutionContext) : Future[TokenResponse] = {
     params.getCode { code =>
       validationManager.validateCode(code, client.id, params.getRedirectUri).flatMap { res =>
         if (params.getScope.exists(x => Some(x) != res.scope))
-          throw OAuthError(INVALID_SCOPE, ErrorDescription(21))
+          throw OAuthError(INVALID_SCOPE, Some(DIFFERENT_SCOPE))
         else validationManager.createAccessToken(res.client, res.user, res.scope)
       }
     }

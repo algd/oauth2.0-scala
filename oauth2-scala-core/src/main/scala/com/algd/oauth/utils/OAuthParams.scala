@@ -29,11 +29,11 @@ object OAuthParams {
 class OAuthParams(private val params: Map[String, String] = Map.empty) {
   def getCode[A](f: String => A) =
     params.get(OAuthParams.CODE).map(f).getOrElse{
-      throw OAuthError(INVALID_REQUEST, ErrorDescription(12))}
+      throw OAuthError(INVALID_REQUEST, Some(AUTH_CODE_NOT_FOUND))}
 
   def getRefreshToken[A](f: String => A) =
     params.get(OAuthParams.REFRESH_TOKEN).map(f).getOrElse{
-      throw OAuthError(INVALID_REQUEST, ErrorDescription(20))}
+      throw OAuthError(INVALID_REQUEST, Some(MISSING_REFRESH_TOKEN))}
 
   def getRedirectUri = params.get(OAuthParams.REDIRECT_URI)
 
@@ -45,7 +45,7 @@ class OAuthParams(private val params: Map[String, String] = Map.empty) {
 
   def getGrantType[A](f: String => Future[A])(implicit ec: ExecutionContext) = Future {
     params.getOrElse(OAuthParams.GRANT_TYPE,
-      throw OAuthError(INVALID_REQUEST, ErrorDescription(5)))}.flatMap(f)
+      throw OAuthError(INVALID_REQUEST, Some(MISSING_GRANT_TYPE)))}.flatMap(f)
 
   def getUser[A](f: (String, String) => A) =
     (params.get(OAuthParams.USERNAME), params.get(OAuthParams.PASSWORD)) match {
@@ -59,7 +59,7 @@ class OAuthParams(private val params: Map[String, String] = Map.empty) {
 
   def getResponseType[A](f: String => Future[A])(implicit ec: ExecutionContext) = Future {
     params.get(OAuthParams.RESPONSE_TYPE).map(ResponseType.grantTypeFor)
-      .getOrElse(throw OAuthError(INVALID_REQUEST, ErrorDescription(6)))}.flatMap(f)
+      .getOrElse(throw OAuthError(INVALID_REQUEST, Some(MISSING_RESPONSE_TYPE)))}.flatMap(f)
 
   def getClientId[A](f: String => A) =
     params.get(OAuthParams.CLIENT_ID).map(f).getOrElse(throw OAuthError(INVALID_CLIENT))
