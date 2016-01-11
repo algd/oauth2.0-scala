@@ -2,7 +2,7 @@ name := "oauth2.0-scala"
 
 scalaVersion in ThisBuild := "2.11.7"
 
-organization in ThisBuild := "com.algd"
+organization in ThisBuild := "io.github.algd"
 
 version in ThisBuild := "0.3.0-SNAPSHOT"
 
