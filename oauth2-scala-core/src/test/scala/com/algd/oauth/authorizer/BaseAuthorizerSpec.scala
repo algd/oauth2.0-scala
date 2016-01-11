@@ -18,9 +18,7 @@ class BaseAuthorizerSpec extends AuthorizerSuite {
 
   val testState = "test_state"
 
-  val mockedAuthorizer = new Authorizer[TestUser, MockedResponse] {
-    override val name: String = "testName"
-
+  val mockedAuthorizer = new Authorizer[TestUser, MockedResponse]("testName") {
     override def process(user: TestUser, client: Client)
       (implicit vm: ValidationManager[TestUser],
         params: OAuthParams,

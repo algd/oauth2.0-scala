@@ -10,9 +10,9 @@ import scala.concurrent.{Future, ExecutionContext}
 
 /**
  * This object will redirect the request to the proper authorizer
- * based on the grant_type parameter.
- * @param dataManager used dataHandler
- * @param authorizers map that associates the grant_type field value
+ * based on the response_type parameter.
+ * @param dataManager used dataManager
+ * @param authorizers map that associates the response_type field value
  *                    with the authorizer
  * @tparam T user class
  * @tparam R class for uri response
@@ -61,7 +61,7 @@ class BaseAuthorizer[T <: User, R <: Product](
   /**
    * Add a sequence of authorizers.
    * @param authorizer authorizer
-   * @param newAuthorizers rest of authorizers
+   * @param newAuthorizers sequence of authorizers
    * @tparam R1 response class
    * @return the same base with more authorizers
    */
@@ -72,6 +72,7 @@ class BaseAuthorizer[T <: User, R <: Product](
 
 /**
  * Authorizers should extend and implement this trait
+ * @param name authorizer name
  * @tparam T user class
  * @tparam R response class
  */
