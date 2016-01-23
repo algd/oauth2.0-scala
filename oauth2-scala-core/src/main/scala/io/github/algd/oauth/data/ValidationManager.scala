@@ -4,14 +4,13 @@ import io.github.algd.oauth.exception.OAuthError
 import OAuthError._
 import io.github.algd.oauth.data.model._
 import io.github.algd.oauth.utils.OAuthParams
-import org.joda.time.DateTime
 
 import scala.concurrent.{ExecutionContext, Future}
 
 /**
  * Contains the validation logic using the data manager methods.
  * @param dataManager dataManager
- * @tparam T
+ * @tparam T user class
  */
 class ValidationManager[T <: User](dataManager: DataManager[T]) {
   import dataManager._
@@ -26,16 +25,10 @@ class ValidationManager[T <: User](dataManager: DataManager[T]) {
    */
   def validateRefreshToken(token: String, clientId: String)
       (implicit params: OAuthParams, ec: ExecutionContext) : Future[AuthorizationData[T]] = {
-    for {
-      tokenData <- getRefreshTokenData(token)
-      nonExpiredData <- tokenData match {
-          //TODO: get expiration time from config
-        case Some(data) if data.creationDate.plusSeconds(36000).isBefore(DateTime.now) =>
-          removeRefreshTokenData(token).map(_ => None)
-        case other => Future.successful(other.find(_.client.id == clientId))
-      }
-    } yield nonExpiredData
-      .getOrElse(throw OAuthError(INVALID_GRANT, Some(INVALID_REFRESH_TOKEN)))
+    getRefreshTokenData(token).map {
+      _.find(_.client.id == clientId)
+        .getOrElse(throw OAuthError(INVALID_GRANT, Some(INVALID_REFRESH_TOKEN)))
+    }
   }
 
   /**
@@ -47,20 +40,16 @@ class ValidationManager[T <: User](dataManager: DataManager[T]) {
    */
   def validateAccessToken(token: String)
       (implicit params: OAuthParams, ec: ExecutionContext) : Future[AuthorizationData[T]] = {
-    for {
-      tokenData <- getAccessTokenData(token)
-      nonExpiredData <- tokenData match {
-        case Some(data) if data.creationDate.plusSeconds(3600).isBefore(DateTime.now) =>
-          removeAccessTokenData(token).map(_ => None)
-        case other => Future.successful(other)
-      }
-    } yield nonExpiredData
-      .getOrElse(throw OAuthError(INVALID_TOKEN, Some(INVALID_OR_EXPIRED_TOKEN)))
+    getAccessTokenData(token).map {
+      _.getOrElse(throw OAuthError(INVALID_TOKEN, Some(INVALID_OR_EXPIRED_TOKEN)))
+    }
   }
 
   /**
    * Get authorization data from authorization code, client id and
-   * optional redirect uri
+   * optional redirect uri.
+   * If redirect uri was specified in the request it should match
+   * the one from the authorization request.
    * @param code authorization code
    * @param clientId client id who the token was granted to
    * @param redirectUri redirect uri from authorization request
@@ -70,15 +59,11 @@ class ValidationManager[T <: User](dataManager: DataManager[T]) {
    */
   def validateCode(code: String, clientId: String, redirectUri: Option[String])
       (implicit params: OAuthParams, ec: ExecutionContext): Future[AuthorizationData[T]] = {
-    for {
-      tokenData <- getAuthCodeData(code)
-      nonExpiredData <- removeAuthCodeData(code) // Always remove
-    } yield {
+    getAuthCodeData(code).map { tokenData =>
       val authData = tokenData.find(_.client.id == clientId)
         .getOrElse(throw OAuthError(INVALID_GRANT, Some(AUTH_CODE_NOT_FOUND)))
-      if (redirectUri.isDefined && redirectUri != authData.givenRedirectUri)
-        throw OAuthError(UNAUTHORIZED_CLIENT, Some(INCORRECT_REDIRECT_URI))
-      authData
+      if (redirectUri.forall(authData.givenRedirectUri.contains)) authData
+      else throw OAuthError(UNAUTHORIZED_CLIENT, Some(INCORRECT_REDIRECT_URI))
     }
   }
 

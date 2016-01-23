@@ -37,29 +37,14 @@ class MyDataManager extends DataManager[TestUser] {
     Future.successful(authCodes.get(code))
   }
 
-  def removeAuthCodeData(code: String)
-      (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[String]] = {
-    Future.successful(authCodes.remove(code).map(_ => code))
-  }
-
   def getRefreshTokenData(refreshToken: String)
       (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[AuthorizationData[TestUser]]] = {
     Future.successful(refTokenDatas.get(refreshToken))
   }
 
-  def removeRefreshTokenData(refreshToken: String)
-      (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[String]] = {
-    Future.successful(refTokenDatas.remove(refreshToken).map(_ => refreshToken))
-  }
-
   def getAccessTokenData(token: String)
       (implicit params: OAuthParams, ec: ExecutionContext) : Future[Option[AuthorizationData[TestUser]]] = {
     Future.successful(tokenDatas.get(token))
-  }
-
-  def removeAccessTokenData(token: String)
-      (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[String]] = {
-    Future.successful(tokenDatas.remove(token).map(_ => token))
   }
 
   def isValidRedirectUri(uri: String, clientUris: List[String])

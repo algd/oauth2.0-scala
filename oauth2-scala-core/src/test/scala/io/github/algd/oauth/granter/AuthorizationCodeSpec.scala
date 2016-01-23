@@ -78,40 +78,4 @@ class AuthorizationCodeSpec extends GranterSuite {
       SCOPE -> "other"))
   }
 
-  /*expectError(INVALID_TOKEN) ("A client shouldn't be able to obtain a token from an expired code") {
-    dataManager.authCodes += ("expiredcode" -> AuthorizationData(
-      dataManager.clients("acclient")._2,
-      dataManager.users("marissa")._2,
-      Some(Set("test")),
-      Some("http://redirect.com/test"),
-      DateTime.now -(30000*1000))) //TODO: constante
-    acGranter(Map(CLIENT_ID -> "acclient",
-      CLIENT_SECRET -> "client_secret",
-      CODE -> "expiredcode",
-      GRANT_TYPE -> GrantType.AUTHORIZATION_CODE,
-      SCOPE -> "test")).onComplete(a => println(a.asInstanceOf[Failure[OAuthError]].get.error))
-    acGranter(Map(CLIENT_ID -> "acclient",
-      CLIENT_SECRET -> "client_secret",
-      CODE -> "expiredcode",
-      GRANT_TYPE -> GrantType.AUTHORIZATION_CODE,
-      SCOPE -> "test"))
-  }*/
-
-  expectError(INVALID_GRANT) (
-    "A client shouldn't be able to obtain an access token using the same code twice") {
-    dataManager.authCodes += ("validcode5" -> AuthorizationData(
-      dataManager.clients("acclient")._2,
-      Some(dataManager.users("marissa")._2),
-      Some(Set("test")),
-      Some("http://redirect.com/test")))
-    acGranter(Map(CLIENT_ID -> "acclient",
-      CLIENT_SECRET -> "client_secret",
-      CODE -> "validcode5",
-      GRANT_TYPE -> GrantType.AUTHORIZATION_CODE)).flatMap{_ =>
-      acGranter(Map(CLIENT_ID -> "acclient",
-        CLIENT_SECRET -> "client_secret",
-        CODE -> "validcode5",
-        GRANT_TYPE -> GrantType.AUTHORIZATION_CODE))}
-  }
-
 }

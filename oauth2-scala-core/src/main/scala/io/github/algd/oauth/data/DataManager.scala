@@ -45,7 +45,10 @@ trait DataManager[T <: User] {
     (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[T]]
 
   /**
-   * Retrieve authorization data from an authorization code
+   * Retrieve authorization data from an authorization code.
+   * This data should be queried only once, so any associated data should
+   * be always removed.
+   * If the authorization code is expired this method should return None.
    * @param code authorization code
    * @param params OAuth 2 parameters
    * @param ec execution context
@@ -55,18 +58,9 @@ trait DataManager[T <: User] {
     (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[AuthorizationData[T]]]
 
   /**
-   * Remove or invalidate authorization data given its authorization code
-   * @param code authorization code
-   * @param params OAuth2 parameters
-   * @param ec execution context
-   * @return Future with deleted authorization code (found/not found)
-   */
-  def removeAuthCodeData(code: String)
-    (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[String]]
-
-
-  /**
    * Get authorization data from refresh token
+   * If the refresh token is expired this method should return None and
+   * remove any associated data.
    * @param refreshToken refresh token
    * @param params OAuth 2 parameters
    * @param ec execution context
@@ -76,17 +70,9 @@ trait DataManager[T <: User] {
     (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[AuthorizationData[T]]]
 
   /**
-   * Remove or invalidate authorization data given its refresh token
-   * @param refreshToken refresh token
-   * @param params OAuth 2 parameters
-   * @param ec execution context
-   * @return Future with deleted refresh token (found/not found)
-   */
-  def removeRefreshTokenData(refreshToken: String)
-    (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[String]]
-
-  /**
    * Get authorization data from access token
+   * If the access token is expired this method should return None and
+   * remove any associated data.
    * @param token access token
    * @param params OAuth 2 parameters
    * @param ec execution context
@@ -94,16 +80,6 @@ trait DataManager[T <: User] {
    */
   def getAccessTokenData(token: String)
     (implicit params: OAuthParams, ec: ExecutionContext) : Future[Option[AuthorizationData[T]]]
-
-  /**
-   * Remove or invalidate authorization data given its refresh token
-   * @param token access token
-   * @param params OAuth 2 parameters
-   * @param ec execution context
-   * @return Future with deleted access token (found/not found)
-   */
-  def removeAccessTokenData(token: String)
-    (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[String]]
 
   /**
    * Validate an URI using the registered client URIs

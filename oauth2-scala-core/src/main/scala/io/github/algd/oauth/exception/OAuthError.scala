@@ -47,6 +47,12 @@ object OAuthError {
   val DIFFERENT_SCOPE = "given scope doesn't match requested scope"
 }
 
+/**
+ * OAuth2 exception
+ * @param error error type
+ * @param description error description
+ * @param state request state parameter
+ */
 case class OAuthError(
   error: String,
   description: Option[String] = None,
