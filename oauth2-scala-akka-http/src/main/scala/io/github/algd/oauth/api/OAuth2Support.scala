@@ -12,16 +12,37 @@ import scala.concurrent.ExecutionContext
 import akka.http.scaladsl.server.Directives._
 import ToResponseMarshallable._
 
+/**
+ * This trait enables an implicit conversion
+ * from Authorizer/Granter to AuthorizerRoute/GranterRoute,
+ * with a route method that returns an Akka Http Route.
+ */
 trait OAuth2Support {
 
+  /**
+   * Default OAuth2 exception handler.
+   * @param ec execution context
+   * @param tem OAuthError to entity marshaller
+   * @return Request response with the proper status code.
+   */
   private def oauthExceptionHandler(
     implicit ec: ExecutionContext,
     tem: ToEntityMarshaller[OAuthError]) = ExceptionHandler {
     case e@OAuthError(error, _, _) => complete(statusCodeFor(error) -> e)
   }
 
+  /**
+   * Custom OAuth2 exception handler.
+   * If not defined it won't be used.
+   * @return OAuth2 exception handler.
+   */
   def customOAuthExceptionHandler: Option[ExceptionHandler] = None
 
+  /**
+   * Implicit class for OAuth2 Granter.
+   * @param granter Oauth2 Granter
+   * @tparam T user class
+   */
   implicit class GranterRoute[T<:User](granter: BaseGranter[T]) {
     def route(params: Map[String, String])
       (implicit ec: ExecutionContext,
@@ -32,6 +53,12 @@ trait OAuth2Support {
     }
   }
 
+  /**
+   * Implicit class for OAuth2 Authorizer
+   * @param authorizer OAuth2 Authorizer
+   * @tparam T user class
+   * @tparam R response class
+   */
   implicit class AuthorizerRoute[T<:User, R <: Product](authorizer: BaseAuthorizer[T, R]) {
     def route(user: T, params: Map[String, String])
       (implicit ec: ExecutionContext, tem: ToEntityMarshaller[OAuthError]): Route = {
@@ -44,6 +71,11 @@ trait OAuth2Support {
     }
   }
 
+  /**
+   * Given a OAuth2 error returns its appropiate status code.
+   * @param error OAuth2 error type
+   * @return Akka Http status code
+   */
   def statusCodeFor(error: String): StatusCode = {
     import OAuthError._
     error match {
@@ -65,4 +97,9 @@ trait OAuth2Support {
   }
 }
 
+/**
+ * This object enables an implicit conversion
+ * from Authorizer/Granter to AuthorizerRoute/GranterRoute,
+ * with a route method that returns an Akka Http Route.
+ */
 object OAuth2Support extends OAuth2Support
