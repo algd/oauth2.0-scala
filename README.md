@@ -67,7 +67,7 @@ import OAuth2Support._
 }
 ```
 ### DataManager implementation
-The [DataManager class](src/main/scala/io/github/algd/oauth/data/DataManager.scala) is in charge of integrating the logic with the persistence layer.
+The [DataManager class](oauth2-scala-core/src/main/scala/io/github/algd/oauth/data/DataManager.scala) is in charge of integrating the logic with the persistence layer.
 You should extend the User class adding the data you think that is meaningful when the token is validated.
 
 Every method receives an implicit OAuthParams instance that contains all the parameters received by the Granter/Authorizer. You can use this if you want to store some data or to do more validations using custom extra parameters from the request or the context.
