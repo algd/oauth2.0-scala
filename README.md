@@ -85,6 +85,7 @@ def getClient(id: String, secret: String)
 (implicit params: OAuthParams, ec: ExecutionContext): Future[Option[Client]]
 ```
 Example of client record:
+
 |Field|Value|
 |-----|-----|
 |***id***|*client_id*|
@@ -116,6 +117,7 @@ def generateRefreshToken(authInfo: AuthorizationData[T])
 This string could be for example the encrypted token information or a key used to retrieve the information if it was stored.
 
 Example of Authorization Code AuthInfo record:
+
 |Field|Value|
 |-----|-----|
 |***code***|*ABCD*|
