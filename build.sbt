@@ -1,6 +1,6 @@
 lazy val commonSettings = Seq(
   organization := "io.github.algd",
-  version := "0.4.0",
+  version := "0.5.0",
   licenses := Seq(("Apache-2.0", url("https://spdx.org/licenses/Apache-2.0.html"))),
   scmInfo := Some(ScmInfo(
     browseUrl = url("https://github.com/algd/oauth2.0-scala"),
@@ -18,7 +18,11 @@ lazy val commonSettings = Seq(
 
 lazy val root = (project in file("."))
   .settings(commonSettings)
-  .settings(name := "oauth2.0-scala")
+  .settings(
+    name := "oauth2.0-scala",
+    publishLocal := {},
+    publish := {}
+  )
   .aggregate(`oauth2-scala-core`, `oauth2-scala-akka-http`)
   .dependsOn(`oauth2-scala-core`, `oauth2-scala-akka-http`)
 
