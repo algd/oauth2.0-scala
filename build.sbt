@@ -1,6 +1,6 @@
 lazy val commonSettings = Seq(
   organization := "io.github.algd",
-  version := "0.5.0",
+  version := "0.6.0-SNAPSHOT",
   licenses := Seq(("Apache-2.0", url("https://spdx.org/licenses/Apache-2.0.html"))),
   scmInfo := Some(ScmInfo(
     browseUrl = url("https://github.com/algd/oauth2.0-scala"),
