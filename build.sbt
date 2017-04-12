@@ -6,7 +6,7 @@ lazy val commonSettings = Seq(
     browseUrl = url("https://github.com/algd/oauth2.0-scala"),
     connection = "scm:git:git@github.com:algd/oauth2.0-scala.git"
   )),
-  scalaVersion := "2.11.8",
+  crossScalaVersions := Seq("2.11.8", "2.12.1"),
   scalacOptions := Seq(
     "-unchecked",
     "-deprecation",
@@ -26,8 +26,8 @@ lazy val `oauth2-scala-core` = project
   .settings(commonSettings)
   .settings(
     libraryDependencies ++= Seq(
-      "com.github.nscala-time" %% "nscala-time" % "2.12.0",
-      "org.scalatest"          %% "scalatest"   % "2.2.6" % "test"
+      "com.github.nscala-time" %% "nscala-time" % "2.16.0",
+      "org.scalatest"          %% "scalatest"   % "3.0.1" % "test"
     )
   )
 
@@ -36,5 +36,5 @@ lazy val `oauth2-scala-akka-http` = project
   .settings(
     mainClass in Compile := None,
     libraryDependencies +=
-      "com.typesafe.akka" %% "akka-http-experimental" % "2.4.4"
+      "com.typesafe.akka" %% "akka-http" % "10.0.5"
   ).dependsOn(`oauth2-scala-core`)
