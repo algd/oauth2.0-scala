@@ -3,18 +3,18 @@ OAuth2.0 scala
 This library provides the necessary tools to implement an OAuth 2.0 server.
 It is based on [RFC 6749](https://tools.ietf.org/html/rfc6749).
 ### Getting Started
-This project is using scala 2.11.8. To get started with SBT, add the following to your `build.sbt`
+This project is using scala 2.11.8/2.12.1. To get started with SBT, add the following to your `build.sbt`
 file:
 ```scala
 resolvers += "bintray algd" at "http://dl.bintray.com/content/algd/maven"
 ```
-In case you want to use the akka-http module add the following. It is using akka 2.4.4.
+In case you want to use the akka-http module add the following. It is using akka http 10.0.5.
 ```scala
-libraryDependencies += "io.github.algd" %% "oauth2-scala-akka-http" % "0.4.0"
+libraryDependencies += "io.github.algd" %% "oauth2-scala-akka-http" % "0.5.0"
 ```
 Otherwise only add:
 ```scala
-libraryDependencies += "io.github.algd" %% "oauth2-scala-core" % "0.4.0"
+libraryDependencies += "io.github.algd" %% "oauth2-scala-core" % "0.5.0"
 ```
 
 ### Authorize endpoint
