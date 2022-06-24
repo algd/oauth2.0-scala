@@ -6,7 +6,7 @@ It is based on [RFC 6749](https://tools.ietf.org/html/rfc6749).
 This project is using scala 2.11.8/2.12.1. To get started with SBT, add the following to your `build.sbt`
 file:
 ```scala
-resolvers += "bintray algd" at "http://dl.bintray.com/content/algd/maven"
+resolvers += "bintray algd" at "https://dl.bintray.com/content/algd/maven"
 ```
 In case you want to use the akka-http module add the following. It is using akka http 10.0.5.
 ```scala
